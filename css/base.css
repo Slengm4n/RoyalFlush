@@ -1,0 +1,32 @@
+ @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
+
+ :root {
+     --gold: #d4af37;
+     --gold-bright: #fcd34d;
+     --wine-dark: #450a0a;
+     --wine-bright: #8b0000;
+ }
+
+ body {
+     background: radial-gradient(circle at center, var(--wine-dark) 0%, #000000 100%);
+     font-family: 'Poppins', sans-serif;
+     color: white;
+     min-height: 100vh;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     overflow-x: hidden;
+     overscroll-behavior-y: none;
+ }
+
+ .casino-title {
+     font-family: 'UnifrakturMaguntia', cursive;
+     color: var(--gold);
+     text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+     letter-spacing: 2px;
+ }
+
+ .hidden-section {
+     display: none !important;
+ }

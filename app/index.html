@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A última Carta - Match Party</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/components.css">
+</head>
+
+<body class="p-4 pt-8 pb-12 relative">
+
+    <!-- BOTÃO DE AJUDA / TUTORIAL -->
+    <button onclick="openHelp()" class="absolute top-6 right-6 text-gold/60 hover:text-gold active:scale-90 transition p-2 z-[80]" title="Como Jogar?">
+        <i class="fas fa-question-circle text-3xl drop-shadow-md"></i>
+    </button>
+
+    <!-- NAVEGAÇÃO FLUTUANTE -->
+    <div class="fixed bottom-4 right-4 z-[90] flex flex-col gap-3 opacity-20 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
+        <a href="admin.html" class="bg-black/90 border border-gold/50 text-gold w-12 h-12 flex items-center justify-center rounded-full active:bg-gold active:text-black transition shadow-lg" title="Ir para o Painel Admin">
+            <i class="fas fa-shield-alt text-xl"></i>
+        </a>
+        <a href="telao.html" class="bg-black/90 border border-gold/50 text-gold w-12 h-12 flex items-center justify-center rounded-full active:bg-gold active:text-black transition shadow-lg" title="Ir para o Telão">
+            <i class="fas fa-desktop text-xl"></i>
+        </a>
+    </div>
+
+    <header class="text-center mb-6">
+        <h1 class="text-5xl casino-title leading-tight">A última Carta</h1>
+        <p class="text-[10px] tracking-[0.4em] text-gold mt-2 uppercase font-bold text-center">Sorte na carta, par na festa</p>
+    </header>
+
+    <div id="jokerStatus"
+        class="mb-4 bg-black/60 px-4 py-2 rounded-full border border-gold/30 text-[10px] uppercase tracking-wider text-gold mx-auto table shadow-lg">
+        Conectando à mesa...
+    </div>
+
+    <!-- SEÇÃO 1: REGISTRO -->
+    <section id="registrationSection" class="w-full max-w-md glass-panel p-6 md:p-8 rounded-3xl shadow-2xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-center italic text-gold">Inicie sua Jogada</h2>
+
+        <div class="space-y-5">
+            <div class="space-y-1">
+                <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">Como te chamam?</label>
+                <input type="text" id="userName"
+                    class="w-full bg-black/40 border border-gold/20 rounded-xl p-4 text-white focus:outline-none focus:border-gold transition-all"
+                    placeholder="Ex: João">
+            </div>
+
+            <!-- CAMPO: INSTAGRAM -->
+            <div class="space-y-1">
+                <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">O seu Instagram</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-500 font-bold text-lg">@</span>
+                    <input type="text" id="userInsta"
+                        class="w-full bg-black/40 border border-gold/20 rounded-xl py-4 pr-4 pl-10 text-white focus:outline-none focus:border-gold transition-all"
+                        placeholder="omeuinsta" autocorrect="off" autocapitalize="none">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">Você é:</label>
+                <div class="custom-select" id="genderDropdown">
+                    <div class="select-trigger" onclick="toggleDropdown('gender')">
+                        <span id="genderLabel">Escolha o seu género</span>
+                        <i class="fas fa-chevron-down text-[10px] text-gold"></i>
+                    </div>
+                    <div class="select-options" id="genderOptions">
+                        <div class="option-item" onclick="selectOption('gender', 'm', 'Homem')">Homem</div>
+                        <div class="option-item" onclick="selectOption('gender', 'f', 'Mulher')">Mulher</div>
+                        <div class="option-item" onclick="selectOption('gender', 'nb', 'Outro')">Outro</div>
+                    </div>
+                </div>
+                <input type="hidden" id="userGender" value="">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">Busca:</label>
+                <div class="custom-select" id="interestDropdown">
+                    <div class="select-trigger" onclick="toggleDropdown('interest')">
+                        <span id="interestLabel">O que procura na festa?</span>
+                        <i class="fas fa-chevron-down text-[10px] text-gold"></i>
+                    </div>
+                    <div class="select-options" id="interestOptions">
+                        <div class="option-item" onclick="selectOption('interest', 'f', 'Mulheres')">Mulheres</div>
+                        <div class="option-item" onclick="selectOption('interest', 'm', 'Homens')">Homens</div>
+                        <div class="option-item" onclick="selectOption('interest', 'all', 'Ambos')">Ambos</div>
+                        <div class="option-item" onclick="selectOption('interest', 'party', 'Festa (Só Curtição)')">Só Curtição</div>
+                    </div>
+                </div>
+                <input type="hidden" id="userInterest" value="">
+            </div>
+
+            <button id="drawBtn" disabled onclick="handleRegistration()"
+                class="btn-gold w-full py-5 rounded-2xl shadow-xl transition transform active:scale-95 mt-2 text-base tracking-wider">
+                SORTEAR MINHA CARTA
+            </button>
+            <p id="authLoadingMsg" class="text-center text-[10px] text-gold animate-pulse italic mt-2 pb-2">Aguardando cassino...</p>
+        </div>
+    </section>
+
+    <!-- SEÇÃO 2: SORTEIO -->
+    <section id="shuffleSection" class="hidden-section text-center">
+        <div class="card-container mx-auto shuffling">
+            <div class="card-face card-back">
+                <div class="w-16 h-16 bg-gold rounded-full flex items-center justify-center text-black text-3xl font-black shadow-inner">?</div>
+            </div>
+        </div>
+        <p class="mt-8 text-xl font-bold tracking-widest text-gold animate-bounce uppercase">A embaralhar...</p>
+    </section>
+
+    <!-- SEÇÃO 3: CARTA REVELADA -->
+    <section id="revealSection" class="hidden-section w-full max-w-sm text-center mx-auto">
+        <div class="card-container mb-8 mx-auto mt-2">
+            <div id="finalCard" class="card-inner relative">
+                <div class="card-face card-back">
+                    <div class="w-16 h-16 bg-gold rounded-full flex items-center justify-center text-black text-3xl font-black shadow-inner">?</div>
+                </div>
+
+                <div class="card-face card-front p-4 flex flex-col justify-between" id="cardContent">
+                    <div class="flex flex-col items-center self-start leading-none">
+                        <div class="text-3xl font-black" id="topValue"></div>
+                        <div class="text-2xl" id="topSymbol"></div>
+                    </div>
+
+                    <div class="text-center flex flex-col items-center justify-center flex-grow">
+                        <div id="mainValue" class="text-[7rem] font-black leading-none drop-shadow-sm"></div>
+                        <div id="mainSuit" class="text-7xl mt-2 drop-shadow-md"></div>
+                    </div>
+
+                    <div class="flex flex-col items-center self-end rotate-180 leading-none">
+                        <div class="text-3xl font-black" id="botValue"></div>
+                        <div class="text-2xl" id="botSymbol"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="jokerMessage"
+            class="hidden bg-purple-600 text-white p-3 rounded-xl mb-4 font-black animate-pulse uppercase tracking-widest text-xs mx-2">
+            👑 VOCÊ É O CORINGA! 👑
+        </div>
+
+        <!-- PRÊMIO MASTER (SÓ PARA O CORINGA) -->
+        <div id="jokerPrize"
+            class="hidden bg-gradient-to-r from-[#d4af37] to-[#aa8a2e] text-black p-4 rounded-2xl mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] border-2 border-white/40 transform hover:scale-105 transition mx-2">
+            <h3 class="font-black text-sm uppercase tracking-widest mb-1"><i class="fas fa-trophy"></i> PRÊMIO MASTER</h3>
+            <p class="text-[11px] font-bold leading-tight">Você foi o escolhido(a)! Fique até a <span class="text-red-900 font-black text-sm">01h00 da manhã</span> e apresente esta tela no bar para resgatar o seu Copo Exclusivo da Atlética!</p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-3xl border border-gold/20 mb-6 shadow-inner mx-2">
+            <h3 class="text-gold font-bold text-[10px] uppercase tracking-widest mb-1 text-center">Missão de Match:</h3>
+            <p id="matchSuggestion" class="text-lg font-semibold text-white italic text-center"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6 mx-2">
+            <div class="bg-black/40 p-4 rounded-2xl border border-gold/20 text-center flex flex-col justify-center shadow-md">
+                <p class="text-gray-400 text-[9px] uppercase font-bold tracking-widest">Seu ID:</p>
+                <p id="myMatchCode" class="text-2xl font-black tracking-[5px] text-gold"></p>
+            </div>
+            <div class="bg-black/40 p-4 rounded-2xl border border-gold/20 text-center flex flex-col justify-center shadow-md">
+                <p class="text-gray-400 text-[9px] uppercase font-bold tracking-widest">Naipe:</p>
+                <p id="suitName" class="text-xl font-bold text-white uppercase"></p>
+            </div>
+        </div>
+
+        <div class="relative group mx-2">
+            <input type="text" id="targetCode" placeholder="CÓDIGO DO PAR" maxlength="4" autocorrect="off" autocapitalize="characters"
+                class="w-full bg-black/60 border-2 border-gold/20 rounded-2xl p-5 text-center text-2xl font-black uppercase focus:outline-none focus:border-gold text-white shadow-inner">
+            <button onclick="checkMatch()"
+                class="mt-3 w-full btn-gold py-5 rounded-2xl shadow-lg transition active:scale-95 uppercase tracking-widest text-sm font-black">
+                VALIDAR ENCONTRO
+            </button>
+        </div>
+
+        <button onclick="localStorage.removeItem('festa_uid_final_scale'); location.reload();"
+            class="mt-10 text-[10px] uppercase font-bold tracking-widest text-gray-600 active:text-gray-400">Reiniciar Teste</button>
+    </section>
+
+    <!-- MODAL DE MATCH -->
+    <div id="matchModal" class="hidden fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center p-6 md:p-8 text-center overflow-y-auto">
+        <div id="celebrationHeader">
+            <h2 class="text-5xl md:text-6xl casino-title mb-4 italic">JACKPOT!</h2>
+            <div class="text-7xl md:text-8xl mb-6 text-center">🥂</div>
+        </div>
+
+        <div id="prizeVoucher"
+            class="hidden w-full max-w-xs voucher-ticket mx-auto shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-bounce mt-4">
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Royal Flush Voucher</p>
+            <h3 class="text-2xl font-black text-red-600 my-2 italic text-center">SHOT DUPLO</h3>
+            <div class="bg-gray-100 p-2 rounded-lg inline-block my-2 mx-auto table">
+                <img id="qrCodeImg" src="" alt="QR Match" class="w-32 h-32">
+            </div>
+            <p class="text-[9px] font-bold text-gray-800 mt-2 text-center uppercase">APRESENTE NO BAR PARA RESGATAR</p>
+            <p id="voucherCode" class="text-sm font-black text-black tracking-widest text-center"></p>
+        </div>
+
+        <p class="text-lg md:text-xl font-bold mt-8 mb-10 text-white leading-tight italic text-center px-4" id="matchMsg"></p>
+        <button onclick="closeMatch()"
+            class="bg-white text-black px-12 py-4 rounded-full font-black text-lg mx-auto block active:scale-95 transition-transform shadow-lg">VOLTAR</button>
+    </div>
+
+    <!-- MODAL DE AJUDA (COMO JOGAR) -->
+    <div id="helpModal" class="hidden fixed inset-0 bg-black/90 z-[300] flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-black/80 border border-gold/40 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_30px_rgba(212,175,55,0.2)] relative">
+            <button onclick="closeHelp()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition p-2">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <h2 class="text-3xl casino-title text-gold mb-6 mt-2">Como Jogar?</h2>
+            
+            <div class="space-y-6 text-left">
+                <div class="flex items-start gap-4">
+                    <div class="bg-gold/20 p-3 rounded-full text-gold h-12 w-12 flex items-center justify-center shrink-0 shadow-inner border border-gold/30">
+                        <i class="fas fa-hand-holding-heart text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-sm uppercase tracking-widest mb-1">1. Sorteie sua Carta</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">Preencha seus dados na tela inicial e descubra qual carta o destino reservou para você.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-4">
+                    <div class="bg-gold/20 p-3 rounded-full text-gold h-12 w-12 flex items-center justify-center shrink-0 shadow-inner border border-gold/30">
+                        <i class="fas fa-search text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-sm uppercase tracking-widest mb-1">2. Encontre seu Par</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">Olhe ao redor na festa! Procure alguém com o <strong>mesmo naipe</strong> que você (ou quem for o Coringa!).</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="bg-gold/20 p-3 rounded-full text-gold h-12 w-12 flex items-center justify-center shrink-0 shadow-inner border border-gold/30">
+                        <i class="fas fa-glass-cheers text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-sm uppercase tracking-widest mb-1">3. Deem o Match</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">Digitem o <strong>ID</strong> um do outro no app. Se der Match, corram para o bar e resgatem um <strong>Shot Duplo</strong>!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeHelp()" class="mt-8 w-full btn-gold py-4 rounded-2xl shadow-lg transition active:scale-95 uppercase tracking-widest text-sm font-black">
+                Entendi! Bora pra festa!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Funções do Menu de Ajuda
+        function openHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+        
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        function toggleDropdown(type) {
+            const options = document.getElementById(type + 'Options');
+            const otherType = type === 'gender' ? 'interest' : 'gender';
+            const otherOptions = document.getElementById(otherType + 'Options');
+            if (otherOptions) otherOptions.classList.remove('active');
+            if (options) options.classList.toggle('active');
+        }
+
+        function selectOption(type, value, label) {
+            const input = document.getElementById('user' + type.charAt(0).toUpperCase() + type.slice(1));
+            const labelEl = document.getElementById(type + 'Label');
+            const optionsEl = document.getElementById(type + 'Options');
+
+            if (input) input.value = value;
+            if (labelEl) {
+                labelEl.innerText = label;
+                labelEl.style.color = '#d4af37';
+            }
+            if (optionsEl) optionsEl.classList.remove('active');
+        }
+
+        function handleRegistration() {
+            if (typeof _handleRegistration === 'function') _handleRegistration();
+        }
+
+        function checkMatch() {
+            if (typeof _checkMatch === 'function') _checkMatch();
+        }
+
+        function closeMatch() {
+            document.getElementById('matchModal').classList.add('hidden');
+            document.getElementById('targetCode').value = "";
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.custom-select')) {
+                document.querySelectorAll('.select-options').forEach(el => el.classList.remove('active'));
+            }
+        });
+    </script>
+
+    <!-- FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8Do2gBZFllqUvVScL24lh99g_T-3qX94",
+            authDomain: "royalflush-a2542.firebaseapp.com",
+            projectId: "royalflush-a2542",
+            storageBucket: "royalflush-a2542.firebasestorage.app",
+            messagingSenderId: "928142170599",
+            appId: "1:928142170599:web:d5568ae550a892dc544542",
+            measurementId: "G-Y6FLL9VGJK"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'festa-royal-flush';
+
+        let currentUser = null;
+        let myData = null;
+
+        const participantsRef = (id) => doc(db, 'artifacts', appId, 'public', 'data', 'participants', id);
+        const participantsCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
+        const jokerRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'joker_status');
+
+        window._handleRegistration = async () => {
+            if (!currentUser) return;
+            const name = document.getElementById('userName').value.trim();
+            let insta = document.getElementById('userInsta').value.trim();
+            const gender = document.getElementById('userGender').value;
+            const interest = document.getElementById('userInterest').value;
+
+            if (!name || !insta || !gender || !interest) {
+                alert("Por favor, preencha todos os campos (incluindo o seu Instagram) e faça as suas seleções!");
+                return;
+            }
+
+            if (!insta.startsWith('@')) insta = '@' + insta;
+
+            document.getElementById('registrationSection').classList.add('hidden-section');
+            document.getElementById('shuffleSection').classList.remove('hidden-section');
+
+            setTimeout(async () => {
+                await processDraw(name, insta, gender, interest);
+            }, 3000);
+        };
+
+        window._checkMatch = async () => {
+            if (!currentUser || !myData) return;
+            const inputCode = document.getElementById('targetCode').value.trim().toUpperCase();
+            if (!inputCode || inputCode === myData.matchCode) return;
+
+            try {
+                const snapshot = await getDocs(participantsCol);
+                const otherDoc = snapshot.docs.find(d => d.data().matchCode === inputCode);
+
+                if (!otherDoc) {
+                    alert("ID não encontrado nesta mesa!");
+                    return;
+                }
+                processMatchResult(otherDoc.data());
+            } catch (err) {
+                console.error("Erro no match:", err);
+            }
+        };
+
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                const btn = document.getElementById('drawBtn');
+                const msg = document.getElementById('authLoadingMsg');
+                if (btn) btn.disabled = false;
+                if (msg) msg.classList.add('hidden');
+                checkSession();
+                monitorJokerStatus();
+            }
+        });
+
+        async function checkSession() {
+            if (!currentUser) return;
+            const savedUid = localStorage.getItem('festa_uid_final_scale') || currentUser.uid;
+            
+            if (savedUid) {
+                try {
+                    const docSnap = await getDoc(participantsRef(savedUid));
+                    if (docSnap.exists()) showMyCard(docSnap.data());
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function monitorJokerStatus() {
+            if (!currentUser) return;
+            onSnapshot(participantsCol, (snapshot) => {
+                const el = document.getElementById('jokerStatus');
+                const joker = snapshot.docs.find(d => d.data().is_joker);
+                if (joker) {
+                    el.innerHTML = `👑 Coringa encontrado: <span class="text-white underline font-bold ml-1">${joker.data().name}</span>`;
+                } else {
+                    el.innerHTML = `🃏 O Coringa ainda está no baralho...`;
+                }
+            });
+        }
+
+        async function processDraw(name, insta, gender, interest) {
+            const uid = currentUser.uid;
+            
+            const suits = [
+                { name: 'Copas', symbol: '♥️', color: '#b91c1c' },
+                { name: 'Espadas', symbol: '♠', color: '#1a1a1a' },
+                { name: 'Ouros', symbol: '♦', color: '#b91c1c' },
+                { name: 'Trevos', symbol: '♣', color: '#1a1a1a' }
+            ];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+            const randomValue = values[Math.floor(Math.random() * values.length)];
+            const matchCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+            let isJoker = false;
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const jokerSnap = await transaction.get(jokerRef);
+                    if (!jokerSnap.exists() || !jokerSnap.data().taken) {
+                        if (Math.random() < 0.05) { // 5% chance
+                            isJoker = true;
+                            transaction.set(jokerRef, { taken: true, winner: uid, name: name });
+                        }
+                    }
+                });
+            } catch (e) { console.error(e); }
+
+            let genderText = interest === 'f' ? "uma MULHER" : (interest === 'm' ? "um HOMEM" : "ALGUÉM");
+            let suggestion = isJoker ? "Você é o Caos! Encontre quem você quiser para o seu Match Perfeito." :
+                `Encontre ${genderText} com o naipe de ${randomSuit.name}!`;
+
+            const participantData = {
+                uid: uid,
+                name: name,
+                instagram: insta,
+                gender: gender,
+                interest: interest,
+                suitName: isJoker ? 'Coringa' : randomSuit.name,
+                suitSymbol: isJoker ? '🎭' : randomSuit.symbol,
+                cardValue: isJoker ? 'J' : randomValue,
+                color: isJoker ? '#a855f7' : randomSuit.color,
+                is_joker: isJoker,
+                matchCode: matchCode,
+                suggestion: suggestion,
+                createdAt: new Date().toISOString()
+            };
+
+            await setDoc(participantsRef(uid), participantData);
+            localStorage.setItem('festa_uid_final_scale', uid);
+            showMyCard(participantData);
+        }
+
+        function showMyCard(data) {
+            myData = data;
+
+            document.getElementById('registrationSection').classList.add('hidden-section');
+            document.getElementById('shuffleSection').classList.add('hidden-section');
+            document.getElementById('revealSection').classList.remove('hidden-section');
+
+            document.getElementById('topValue').innerText = data.cardValue;
+            document.getElementById('topSymbol').innerText = data.suitSymbol;
+            document.getElementById('botValue').innerText = data.cardValue;
+            document.getElementById('botSymbol').innerText = data.suitSymbol;
+
+            const cardContent = document.getElementById('cardContent');
+            const mainValue = document.getElementById('mainValue');
+            const mainSuit = document.getElementById('mainSuit');
+
+            if (data.is_joker) {
+                mainValue.innerText = 'JOKER';
+                mainValue.className = 'text-5xl font-black leading-none tracking-widest';
+                mainSuit.innerText = '🤡';
+                mainSuit.className = 'text-[6rem] mt-2 drop-shadow-xl';
+
+                cardContent.classList.add('joker-card-front');
+                cardContent.classList.add('joker-glow');
+                document.getElementById('finalCard').classList.remove('joker-glow');
+
+                document.getElementById('jokerMessage').classList.remove('hidden');
+                document.getElementById('jokerPrize').classList.remove('hidden');
+            } else {
+                mainValue.innerText = data.cardValue;
+                mainValue.className = 'text-[7rem] font-black leading-none drop-shadow-sm';
+                mainSuit.innerText = data.suitSymbol;
+                mainSuit.className = 'text-7xl mt-2 drop-shadow-md opacity-90';
+
+                cardContent.classList.remove('joker-card-front');
+                cardContent.classList.remove('joker-glow');
+                document.getElementById('finalCard').classList.remove('joker-glow');
+
+                document.getElementById('jokerMessage').classList.add('hidden');
+                document.getElementById('jokerPrize').classList.add('hidden');
+            }
+
+            cardContent.style.color = data.color;
+
+            document.getElementById('myMatchCode').innerText = data.matchCode;
+            document.getElementById('suitName').innerText = data.suitName;
+            document.getElementById('matchSuggestion').innerText = data.suggestion;
+
+            setTimeout(() => {
+                const finalCard = document.getElementById('finalCard');
+                if (finalCard) finalCard.classList.add('is-flipped');
+            }, 600);
+        }
+
+        function processMatchResult(other) {
+            const matchMsg = document.getElementById('matchMsg');
+            const voucherDiv = document.getElementById('prizeVoucher');
+
+            const iWantThem = ['all', 'party'].includes(myData.interest) || myData.interest === other.gender;
+            const theyWantMe = ['all', 'party'].includes(other.interest) || other.interest === myData.gender;
+            const cardsMatch = (myData.suitName === other.suitName) || myData.is_joker || other.is_joker;
+
+            const instaDisplay = other.instagram ? `<br><a href="https://instagram.com/${other.instagram.replace('@', '')}" target="_blank" class="text-pink-400 text-sm mt-3 inline-block bg-white/10 px-4 py-2 rounded-full border border-pink-500/30 active:scale-95 transition"><i class="fab fa-instagram"></i> ${other.instagram}</a>` : '';
+
+            if (iWantThem && theyWantMe && cardsMatch) {
+                if (myData.interest === 'party' || other.interest === 'party') {
+                    matchMsg.innerHTML = `PARCEIROS DE COPO! 🍻<br>O cassino uniu vocês para curtir. ${instaDisplay}`;
+                } else {
+                    matchMsg.innerHTML = `O DESTINO FALOU! ✨<br>Você e ${other.name} combinam perfeitamente. ${instaDisplay}`;
+                }
+
+                // 🔥 CORREÇÃO DO GOLPE DO SHOT DUPLO 🔥
+                const sortedCodes = [myData.matchCode, other.matchCode].sort();
+                const prizeId = `ROYAL-${sortedCodes[0]}-${sortedCodes[1]}`;
+                
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${prizeId}`;
+                document.getElementById('qrCodeImg').src = qrUrl;
+                document.getElementById('voucherCode').innerText = prizeId;
+                if (voucherDiv) voucherDiv.classList.remove('hidden');
+                confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+                
+            } else if (cardsMatch && (!iWantThem || !theyWantMe)) {
+                matchMsg.innerHTML = `As cartas combinam, mas as preferências de vocês não batem nessa rodada! 😉 ${instaDisplay}`;
+                if (voucherDiv) voucherDiv.classList.add('hidden');
+            } else {
+                matchMsg.innerHTML = `Naipes diferentes! O segredo é continuar procurando o seu par real pela festa. 🥃 ${instaDisplay}`;
+                if (voucherDiv) voucherDiv.classList.add('hidden');
+            }
+            
+            document.getElementById('matchModal').classList.remove('hidden');
+        }
+
+        initAuth();
+    </script>
+</body>
+
+</html>

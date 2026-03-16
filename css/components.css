@@ -1,0 +1,89 @@
+.glass-panel {
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(12px);
+    border: 2px solid var(--gold);
+    position: relative;
+}
+
+.btn-gold {
+    background: linear-gradient(to bottom, #d4af37, #aa8a2e);
+    color: black;
+    font-weight: 900;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.select-trigger {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.select-trigger:active {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.select-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+}
+
+.select-options.active {
+    display: block;
+    animation: fadeInDown 0.2s ease-out;
+}
+
+.option-item {
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    color: #ccc;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.option-item:last-child {
+    border-bottom: none;
+}
+
+.option-item:active {
+    background: var(--gold);
+    color: black;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
