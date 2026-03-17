@@ -1,0 +1,36 @@
+ @keyframes marquee {
+     0% {
+         transform: translateX(100vw);
+     }
+
+     100% {
+         transform: translateX(-100%);
+     }
+ }
+
+ @keyframes popIn {
+     0% {
+         transform: scale(0) translateY(50px) rotate(-15deg);
+         opacity: 0;
+     }
+
+     100% {
+         transform: scale(1) translateY(0) rotate(0deg);
+         opacity: 1;
+     }
+ }
+
+ @keyframes jokerPulse {
+     0% {
+         box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+     }
+
+     100% {
+         box-shadow: 0 0 50px rgba(168, 85, 247, 0.8);
+     }
+ }
+
+ @keyframes qrPulse {
+            0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
+            100% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.6); }
+        }
