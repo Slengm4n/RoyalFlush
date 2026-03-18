@@ -77,16 +77,17 @@ export function showMyCard(data) {
     const cardContent = el('cardContent');
 
     if (cardContent) {
-        if (data.is_joker) {
-            // Layout Especial Coringa: Limpa o centro para o emoji brilhar
-            if (mainValue) {
-                mainValue.innerText = ''; 
-            }
+       if (data.is_joker) {
+            // Layout Especial Coringa (Minimalista Premium no Celular também!)
+            if (mainValue) mainValue.innerText = ''; 
             if (mainSuit) {
-                mainSuit.innerText = '🤡';
+                mainSuit.innerText = '🤡'; // Pode ser 🤡 ou 🎭, como preferires
                 mainSuit.className = 'text-[8rem] mt-2 drop-shadow-2xl animate-pulse';
             }
-            cardContent.classList.add('joker-card-front', 'joker-glow');
+            
+            // Removemos o fundo escuro e deixamos só o brilho neon roxo!
+            cardContent.classList.remove('joker-card-front'); 
+            cardContent.classList.add('joker-glow');
             
             if (el('jokerMessage')) el('jokerMessage').classList.remove('hidden');
             if (el('jokerPrize')) el('jokerPrize').classList.remove('hidden');

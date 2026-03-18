@@ -4,88 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin - Match Party</title>
+    <title>RoyalFlush - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
-
-        :root {
-            --gold: #d4af37;
-            --wine-dark: #2a0505;
-        }
-
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top, #1e1b4b 0%, #000000 100%);
-            min-height: 100vh;
-        }
-
-        /* Previne o zoom automático no iPhone ao clicar num campo de texto */
-        input[type="text"], input[type="password"] {
-            font-size: 16px !important;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .casino-title {
-            font-family: 'UnifrakturMaguntia', cursive;
-            color: var(--gold);
-        }
-
-        /* Mini Cartas para a Mesa */
-        .mini-card {
-            width: 70px;
-            height: 100px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid var(--gold);
-            background: #fff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
-
-        .mini-card::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0.1;
-            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
-            border-radius: 6px;
-        }
-
-        .mini-card.joker {
-            background: linear-gradient(135deg, #1a1a1a, #3b0764);
-            border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-        }
-
-        /* Scrollbar customizada para a mesa */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gold);
-            border-radius: 4px;
-        }
-    </style>
+    <link href="/css/admin.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
 </head>
 
 <body class="p-4 md:p-8 pb-20">
@@ -124,6 +50,7 @@
 
     <header class="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 border-b border-gray-700 pb-4 gap-4 mt-2">
         <div class="text-center md:text-left">
+            <img src="/img/sagui_joker.png" alt="Logo Fatec Ferraz" class="w-14 h-14 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
             <h1 class="text-3xl md:text-4xl casino-title mb-1">Central de Comando</h1>
             <p class="text-[10px] md:text-xs tracking-widest text-gray-400 uppercase font-bold">Monitoramento & Bar</p>
         </div>

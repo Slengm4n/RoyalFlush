@@ -4,15 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telão - Match Party</title>
+    <title>RoyalFlush - Dashboard</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+    <link rel="manifest" href="../img/site.webmanifest">
 </head>
 
 <body>
 
-    <!-- TELA DE LOGIN -->
     <div id="loginOverlay" class="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/p6.png')] p-4">
         <div class="bg-black/80 p-8 md:p-10 rounded-3xl border border-gold/30 shadow-[0_0_50px_rgba(212,175,55,0.2)] text-center max-w-[95%] md:max-w-md w-full backdrop-blur-md mx-auto">
             <i class="fas fa-desktop text-5xl text-gold mb-4"></i>
@@ -33,15 +37,12 @@
         </div>
     </div>
 
-    <!-- NAVEGAÇÃO E BOTÕES DE TESTE (Flutuantes) -->
     <div class="fixed bottom-4 right-4 z-[90] flex flex-col gap-3 opacity-10 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
         
-        <!-- Botão Limpar Mesa -->
         <button onclick="window.wipeTable()" class="bg-red-900/90 border border-red-500 text-red-300 w-12 h-12 flex items-center justify-center rounded-full hover:bg-red-500 hover:text-white transition shadow-lg" title="Zerar Festa (Apagar Tudo)">
             <i class="fas fa-trash-alt text-xl"></i>
         </button>
 
-        <!-- Botão Simular Pessoas -->
         <button onclick="window.simulateCrowd()" class="bg-blue-900/90 border border-blue-500 text-blue-300 w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-500 hover:text-white transition shadow-lg" title="Injetar 20 Pessoas (Teste)">
             <i class="fas fa-users text-xl"></i>
         </button>
@@ -54,9 +55,9 @@
         </a>
     </div>
 
-    <!-- CABEÇALHO DO TELÃO -->
-    <header class="flex flex-col md:flex-row justify-between items-center px-4 md:px-12 py-4 md:py-6 border-b border-white/10 gap-4">
+    <header class="flex flex-col md:flex-row justify-between items-center px-4 md:px-12 py-4 md:py-6 border-b border-white/10 gap-4 shrink-0">
         <div class="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-center md:text-left">
+            <img src="/img/sagui_joker.png" alt="Logo Fatec Ferraz" class="w-28 h-28 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
             <h1 class="text-4xl md:text-6xl casino-title">A última Carta</h1>
             <div class="hidden md:block h-12 w-1 bg-gold opacity-30"></div>
             <p class="text-lg md:text-2xl tracking-[0.3em] text-gray-400 uppercase font-bold mt-1 md:mt-2">Live Table</p>
@@ -71,10 +72,8 @@
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL -->
-    <main class="flex-grow flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8 h-full overflow-hidden">
+   <main class="flex-grow flex flex-col md:flex-row p-4 md:p-8 gap-4 md:gap-8 min-h-0 overflow-hidden">
         
-        <!-- COLUNA ESQUERDA: QR CODE -->
         <aside class="w-full md:w-1/3 flex flex-col justify-center items-center glass-panel rounded-3xl p-6 md:p-8 relative flex-shrink-0">
             <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 rounded-3xl pointer-events-none"></div>
             
@@ -82,7 +81,7 @@
             <p class="text-sm md:text-lg text-gold mb-6 md:mb-10 italic text-center relative z-10 px-2 md:px-4">Aponte a câmara e encontre o seu par ou parceiro de copo!</p>
             
             <div class="bg-white p-3 md:p-5 rounded-3xl qr-glow relative z-10 mb-4">
-                <img id="mainQrCode" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://sua-festa-aqui.com" alt="QR Code do Jogo" class="w-48 h-48 md:w-72 md:h-72">
+                <img id="mainQrCode" src="" alt="QR Code do Jogo" class="w-48 h-48 md:w-72 md:h-72">
             </div>
             
             <div class="mt-4 md:mt-8 relative z-10 w-full">
@@ -93,27 +92,25 @@
             </div>
         </aside>
 
-        <!-- COLUNA DIREITA: A MESA -->
-        <section class="w-full md:w-2/3 glass-panel rounded-3xl p-6 md:p-8 flex flex-col relative overflow-hidden flex-shrink-0">
+        <section class="w-full md:w-2/3 glass-panel rounded-3xl p-6 md:p-8 flex flex-col relative overflow-hidden h-full min-h-0">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 md:mb-6 border-b border-gold/30 pb-4 gap-2">
                 <h2 class="text-2xl md:text-4xl font-black text-gold uppercase tracking-widest text-center sm:text-left">Cartas na Mesa</h2>
                 <p class="text-gray-400 text-xs md:text-sm uppercase tracking-widest bg-black/50 px-3 md:px-4 py-1 rounded-full border border-white/10 text-center">Exibindo os mais recentes</p>
             </div>
             
-            <!-- Grid com Scroll suave -->
             <div id="cardsGrid" class="flex-grow overflow-y-auto flex flex-wrap gap-4 md:gap-6 justify-center items-start pb-10">
-                <!-- As cartas vão aparecer aqui via JS -->
-            </div>
+                </div>
         </section>
 
     </main>
 
-    <!-- RODAPÉ -->
     <div class="marquee-container">
         <div id="liveFeed" class="marquee-content">
             ✦ Bem-vindos à A Última Carta ✦ Escaneie o QR Code na tela para jogar ✦ Encontre seu par e ganhe um Shot Duplo no bar ✦ O Coringa pode estar em qualquer lugar... ✦
         </div>
     </div>
-<script type="module" src="../js/dashboard.js"></script>
+
+    <script type="module" src="../js/dashboard.js"></script>
+
 </body>
 </html>

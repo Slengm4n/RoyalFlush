@@ -28,3 +28,20 @@ export const getParticipantDoc = (id) => doc(db, 'artifacts', appId, 'public', '
  * 🔥 CORREÇÃO: Exportando a função getVoucherDoc
  */
 export const getVoucherDoc = (code) => doc(db, 'artifacts', appId, 'public', 'data', 'vouchers', code);
+
+import { query, where, getDocs } from 
+"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/**
+ * 🔎 Busca participante pelo matchCode (SEM scan manual)
+ */
+export async function findParticipantByCode(code) {
+
+    const q = query(participantsCol, where("matchCode", "==", code));
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) return null;
+
+    return snap.docs[0].data();
+}

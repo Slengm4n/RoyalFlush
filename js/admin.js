@@ -154,7 +154,6 @@ function renderMiniCard(container, d) {
         ? `<a href="https://instagram.com/${instaClean}" target="_blank" class="text-[10px] text-pink-400 hover:text-pink-300 mt-1 truncate w-full text-center" title="Ver Instagram"><i class="fab fa-instagram"></i> @${instaClean}</a>` 
         : `<span class="text-[9px] text-gray-600 mt-1">Sem Insta</span>`;
 
-    // CORREÇÃO DE DESIGN: Aplica o visual minimalista e remove o antigo fundo roxo estático
     const html = `
         <div class="flex flex-col items-center w-[80px]">
             <div class="mini-card ${isJ ? 'joker-glow' : ''} bg-white hover:-translate-y-2 transition-transform duration-300" style="color: ${d.color}; border-color: var(--gold);">

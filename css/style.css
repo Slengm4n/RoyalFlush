@@ -1,5 +1,334 @@
-@import url(/css/base.css);
-@import url(/css/components.css);
-@import url(/css/modals.css);
-@import url(/css/game.css);
-@import url(/css/dashboard.css);
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
+
+/* =========================================
+   1. VARIÁVEIS E BASE
+========================================= */
+:root {
+    --gold: #d4af37;
+    --gold-bright: #fcd34d;
+    --wine-dark: #2a0505;
+    --wine-bright: #450a0a;
+}
+
+html {
+    background-color: #000;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+body {
+    color: #f8fafc;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at center, var(--wine-bright) 0%, #000000 100%);
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+
+input[type="text"], input[type="password"], input[type="email"] { 
+    font-size: 16px !important; 
+}
+
+/* Oculta scrollbar na grade de cartas, mas permite o scroll */
+#cardsGrid::-webkit-scrollbar { display: none; }
+#cardsGrid { -ms-overflow-style: none; scrollbar-width: none; }
+
+.hidden-section { display: none !important; }
+
+/* =========================================
+   2. COMPONENTES GERAIS (PAINÉIS, TÍTULOS E BOTÕES)
+========================================= */
+.casino-title {
+    font-family: 'UnifrakturMaguntia', cursive;
+    color: var(--gold);
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+    letter-spacing: 2px;
+}
+
+.glass-panel {
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(12px);
+    border: 2px solid var(--gold);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+
+.btn-gold {
+    background: linear-gradient(to bottom, #d4af37, #aa8a2e);
+    color: black;
+    font-weight: 900;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================================
+   3. CARTAS DO TELÃO (VISUAL PREMIUM)
+========================================= */
+.telao-card {
+    width: 90px;
+    height: 130px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    /* Fundo Marfim e Borda Dupla Interna */
+    background: linear-gradient(135deg, #ffffff 0%, #f4ebd8 100%);
+    border: 1px solid var(--gold);
+    box-shadow: 
+        0 10px 20px rgba(0, 0, 0, 0.6), 
+        inset 0 0 0 3px #ffffff, 
+        inset 0 0 0 4px var(--gold);
+        
+    position: relative;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transition: all 0.3s ease;
+    color: #111;
+    font-weight: 800;
+}
+
+.telao-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 
+        0 20px 30px rgba(0, 0, 0, 0.8), 
+        inset 0 0 0 3px #ffffff, 
+        inset 0 0 0 4px var(--gold);
+    z-index: 10;
+}
+
+@media (min-width: 768px) {
+    .telao-card {
+        width: 110px;
+        height: 160px;
+        border-radius: 10px;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.6), 
+            inset 0 0 0 4px #ffffff, 
+            inset 0 0 0 6px var(--gold);
+    }
+    .telao-card:hover {
+        box-shadow: 
+            0 20px 30px rgba(0, 0, 0, 0.8), 
+            inset 0 0 0 4px #ffffff, 
+            inset 0 0 0 6px var(--gold);
+    }
+}
+
+/* =========================================
+   4. CARTAS DO APP MOBILE (COM FLIP 3D)
+========================================= */
+.card-container {
+    width: 260px;
+    height: 380px;
+    perspective: 1000px;
+    max-width: 90vw;
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card-inner.is-flipped { transform: rotateY(180deg); }
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 4px solid var(--gold);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+}
+
+.card-front {
+    background: #fdfdfd;
+    background-image: radial-gradient(#ffffff 0%, #e5e5e5 100%);
+    color: black;
+    transform: rotateY(180deg);
+}
+
+.card-front::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+    pointer-events: none;
+    border-radius: 14px;
+}
+
+.card-back {
+    background: #1a1a1a;
+    background-image: repeating-linear-gradient(45deg, #2a0505 0, #2a0505 2px, transparent 0, transparent 50%);
+    background-size: 15px 15px;
+    border: 6px solid var(--gold);
+}
+
+/* =========================================
+   5. O CORINGA (JOKER) E EFEITOS
+========================================= */
+.joker-card-front {
+    background: linear-gradient(135deg, #1a1a1a 0%, #3b0764 100%) !important;
+    color: #d8b4fe !important;
+    border-color: #a855f7 !important;
+    box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.6), 
+        inset 0 0 0 4px #1a1a1a, 
+        inset 0 0 0 6px #a855f7 !important;
+}
+
+.joker-glow {
+    box-shadow: 0 0 30px #a855f7, 0 0 60px rgba(168, 85, 247, 0.5);
+    animation: jokerPulse 2s infinite alternate;
+}
+
+.qr-glow {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+    animation: qrPulse 3s infinite alternate;
+}
+
+/* =========================================
+   6. LETREIRO, SELECTS E VOUCHER
+========================================= */
+.marquee-container {
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 2px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    padding: 12px 0;
+    width: 100%;
+}
+
+.marquee-content {
+    display: inline-block;
+    animation: marquee 30s linear infinite;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+@media (min-width: 768px) { .marquee-content { font-size: 1.6rem; } }
+
+.custom-select { position: relative; width: 100%; }
+
+.select-trigger {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.select-trigger:active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); }
+
+.select-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+}
+
+.select-options.active { display: block; animation: fadeInDown 0.2s ease-out; }
+
+.option-item {
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    color: #ccc;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.option-item:last-child { border-bottom: none; }
+.option-item:active { background: var(--gold); color: black; }
+
+.voucher-ticket {
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    border: 2px dashed var(--gold);
+}
+
+.voucher-ticket::before, .voucher-ticket::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #000;
+    border-radius: 50%;
+    top: 50%;
+    margin-top: -10px;
+}
+.voucher-ticket::before { left: -12px; }
+.voucher-ticket::after { right: -12px; }
+
+/* =========================================
+   7. ANIMAÇÕES (KEYFRAMES)
+========================================= */
+@keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+@keyframes popIn { 0% { transform: scale(0) translateY(50px) rotate(-15deg); opacity: 0; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } }
+@keyframes shuffle { 0%, 100% { transform: translateX(0) rotate(0deg); } 25% { transform: translateX(-15px) rotate(-3deg); } 50% { transform: translateX(15px) rotate(3deg); } }
+.shuffling { animation: shuffle 0.2s infinite; }
+@keyframes jokerPulse { 0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); } 100% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.8); } }
+@keyframes qrPulse { 0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); } 100% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.6); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   8. CARTAS DO ADMIN (MINI CARDS)
+========================================= */
+.mini-card {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--gold);
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+.mini-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+    border-radius: 6px;
+}
