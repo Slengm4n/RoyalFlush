@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
@@ -118,7 +119,8 @@
 
     <!-- SEÇÃO 3: CARTA REVELADA -->
     <section id="revealSection" class="hidden-section w-full max-w-sm text-center mx-auto">
-        <div class="card-container mb-8 mx-auto mt-2">
+        
+        <div class="card-container mb-6 mx-auto mt-2">
             <div id="finalCard" class="card-inner relative">
                 <div class="card-face card-back">
                     <div class="w-16 h-16 bg-gold rounded-full flex items-center justify-center text-black text-3xl font-black shadow-inner">?</div>
@@ -143,12 +145,16 @@
             </div>
         </div>
 
+        <button id="shareBtn" onclick="shareToInstagram()"
+            class="mb-6 mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(219,39,119,0.4)] active:scale-95 transition">
+            <i class="fab fa-instagram text-xl"></i> Postar no Story
+        </button>
+
         <div id="jokerMessage"
             class="hidden bg-purple-600 text-white p-3 rounded-xl mb-4 font-black animate-pulse uppercase tracking-widest text-xs mx-2">
             👑 VOCÊ É O CORINGA! 👑
         </div>
 
-        <!-- PRÊMIO MASTER (SÓ PARA O CORINGA) -->
         <div id="jokerPrize"
             class="hidden bg-gradient-to-r from-[#d4af37] to-[#aa8a2e] text-black p-4 rounded-2xl mb-6 shadow-[0_0_20px_rgba(212,175,55,0.4)] border-2 border-white/40 transform hover:scale-105 transition mx-2">
             <h3 class="font-black text-sm uppercase tracking-widest mb-1"><i class="fas fa-trophy"></i> PRÊMIO MASTER</h3>
@@ -183,7 +189,6 @@
         <button onclick="localStorage.removeItem('festa_uid_final_scale'); location.reload();"
             class="mt-10 text-[10px] uppercase font-bold tracking-widest text-gray-600 active:text-gray-400">Reiniciar Teste</button>
     </section>
-
     <!-- MODAL DE MATCH -->
     <div id="matchModal" class="hidden fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center p-6 md:p-8 text-center overflow-y-auto">
         <div id="celebrationHeader">
@@ -251,7 +256,7 @@
             </button>
         </div>
     </div>
-    <script type="module" src="/js/app.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>

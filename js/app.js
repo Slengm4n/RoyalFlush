@@ -16,6 +16,7 @@ window.closeHelp = ui.closeHelp;
 window.toggleDropdown = ui.toggleDropdown;
 window.selectOption = ui.selectOption;
 window.closeMatch = ui.closeMatch;
+window.shareToInstagram = game.shareToInstagram;
 
 // Função de Registro/Sorteio
 window.handleRegistration = async () => {
@@ -127,5 +128,4 @@ onAuthStateChanged(auth, async (user) => {
 // Inicia o login anónimo
 signInAnonymously(auth).catch(err => {
     console.error("Erro crítico de autenticação:", err);
-    // Nota: Se estiveres em localhost, lembra-te de adicionar 127.0.0.1 aos domínios autorizados no Firebase Console
 });
