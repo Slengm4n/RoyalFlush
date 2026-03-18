@@ -4,17 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>A última Carta - Match Party</title>
+    <title>RoyalFlush</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/game.css">
-    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+<link rel="manifest" href="../img/site.webmanifest">
 </head>
 
 <body class="p-4 pt-8 pb-12 relative">
-
     <!-- BOTÃO DE AJUDA / TUTORIAL -->
     <button onclick="openHelp()" class="absolute top-6 right-6 text-gold/60 hover:text-gold active:scale-90 transition p-2 z-[80]" title="Como Jogar?">
         <i class="fas fa-question-circle text-3xl drop-shadow-md"></i>
@@ -31,6 +32,7 @@
     </div>
 
     <header class="text-center mb-6">
+        <img src="/img/sagui_joker.png" alt="Logo Fatec Ferraz" class="w-28 h-28 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
         <h1 class="text-5xl casino-title leading-tight">A última Carta</h1>
         <p class="text-[10px] tracking-[0.4em] text-gold mt-2 uppercase font-bold text-center">Sorte na carta, par na festa</p>
     </header>
@@ -49,7 +51,7 @@
                 <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">Como te chamam?</label>
                 <input type="text" id="userName"
                     class="w-full bg-black/40 border border-gold/20 rounded-xl p-4 text-white focus:outline-none focus:border-gold transition-all"
-                    placeholder="Ex: João">
+                    placeholder="Ex: Fulano da Silva">
             </div>
 
             <!-- CAMPO: INSTAGRAM -->
@@ -67,7 +69,7 @@
                 <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">Você é:</label>
                 <div class="custom-select" id="genderDropdown">
                     <div class="select-trigger" onclick="toggleDropdown('gender')">
-                        <span id="genderLabel">Escolha o seu género</span>
+                        <span id="genderLabel">Escolha o seu gênero</span>
                         <i class="fas fa-chevron-down text-[10px] text-gold"></i>
                     </div>
                     <div class="select-options" id="genderOptions">
@@ -185,7 +187,6 @@
     <!-- MODAL DE MATCH -->
     <div id="matchModal" class="hidden fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center p-6 md:p-8 text-center overflow-y-auto">
         <div id="celebrationHeader">
-            <h2 class="text-5xl md:text-6xl casino-title mb-4 italic">JACKPOT!</h2>
             <div class="text-7xl md:text-8xl mb-6 text-center">🥂</div>
         </div>
 
@@ -250,319 +251,7 @@
             </button>
         </div>
     </div>
-
-    <script>
-        // Funções do Menu de Ajuda
-        function openHelp() {
-            document.getElementById('helpModal').classList.remove('hidden');
-        }
-        
-        function closeHelp() {
-            document.getElementById('helpModal').classList.add('hidden');
-        }
-
-        function toggleDropdown(type) {
-            const options = document.getElementById(type + 'Options');
-            const otherType = type === 'gender' ? 'interest' : 'gender';
-            const otherOptions = document.getElementById(otherType + 'Options');
-            if (otherOptions) otherOptions.classList.remove('active');
-            if (options) options.classList.toggle('active');
-        }
-
-        function selectOption(type, value, label) {
-            const input = document.getElementById('user' + type.charAt(0).toUpperCase() + type.slice(1));
-            const labelEl = document.getElementById(type + 'Label');
-            const optionsEl = document.getElementById(type + 'Options');
-
-            if (input) input.value = value;
-            if (labelEl) {
-                labelEl.innerText = label;
-                labelEl.style.color = '#d4af37';
-            }
-            if (optionsEl) optionsEl.classList.remove('active');
-        }
-
-        function handleRegistration() {
-            if (typeof _handleRegistration === 'function') _handleRegistration();
-        }
-
-        function checkMatch() {
-            if (typeof _checkMatch === 'function') _checkMatch();
-        }
-
-        function closeMatch() {
-            document.getElementById('matchModal').classList.add('hidden');
-            document.getElementById('targetCode').value = "";
-        }
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.custom-select')) {
-                document.querySelectorAll('.select-options').forEach(el => el.classList.remove('active'));
-            }
-        });
-    </script>
-
-    <!-- FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC8Do2gBZFllqUvVScL24lh99g_T-3qX94",
-            authDomain: "royalflush-a2542.firebaseapp.com",
-            projectId: "royalflush-a2542",
-            storageBucket: "royalflush-a2542.firebasestorage.app",
-            messagingSenderId: "928142170599",
-            appId: "1:928142170599:web:d5568ae550a892dc544542",
-            measurementId: "G-Y6FLL9VGJK"
-        };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'festa-royal-flush';
-
-        let currentUser = null;
-        let myData = null;
-
-        const participantsRef = (id) => doc(db, 'artifacts', appId, 'public', 'data', 'participants', id);
-        const participantsCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
-        const jokerRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'joker_status');
-
-        window._handleRegistration = async () => {
-            if (!currentUser) return;
-            const name = document.getElementById('userName').value.trim();
-            let insta = document.getElementById('userInsta').value.trim();
-            const gender = document.getElementById('userGender').value;
-            const interest = document.getElementById('userInterest').value;
-
-            if (!name || !insta || !gender || !interest) {
-                alert("Por favor, preencha todos os campos (incluindo o seu Instagram) e faça as suas seleções!");
-                return;
-            }
-
-            if (!insta.startsWith('@')) insta = '@' + insta;
-
-            document.getElementById('registrationSection').classList.add('hidden-section');
-            document.getElementById('shuffleSection').classList.remove('hidden-section');
-
-            setTimeout(async () => {
-                await processDraw(name, insta, gender, interest);
-            }, 3000);
-        };
-
-        window._checkMatch = async () => {
-            if (!currentUser || !myData) return;
-            const inputCode = document.getElementById('targetCode').value.trim().toUpperCase();
-            if (!inputCode || inputCode === myData.matchCode) return;
-
-            try {
-                const snapshot = await getDocs(participantsCol);
-                const otherDoc = snapshot.docs.find(d => d.data().matchCode === inputCode);
-
-                if (!otherDoc) {
-                    alert("ID não encontrado nesta mesa!");
-                    return;
-                }
-                processMatchResult(otherDoc.data());
-            } catch (err) {
-                console.error("Erro no match:", err);
-            }
-        };
-
-        async function initAuth() {
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Auth error:", error);
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                const btn = document.getElementById('drawBtn');
-                const msg = document.getElementById('authLoadingMsg');
-                if (btn) btn.disabled = false;
-                if (msg) msg.classList.add('hidden');
-                checkSession();
-                monitorJokerStatus();
-            }
-        });
-
-        async function checkSession() {
-            if (!currentUser) return;
-            const savedUid = localStorage.getItem('festa_uid_final_scale') || currentUser.uid;
-            
-            if (savedUid) {
-                try {
-                    const docSnap = await getDoc(participantsRef(savedUid));
-                    if (docSnap.exists()) showMyCard(docSnap.data());
-                } catch (e) { console.error(e); }
-            }
-        }
-
-        function monitorJokerStatus() {
-            if (!currentUser) return;
-            onSnapshot(participantsCol, (snapshot) => {
-                const el = document.getElementById('jokerStatus');
-                const joker = snapshot.docs.find(d => d.data().is_joker);
-                if (joker) {
-                    el.innerHTML = `👑 Coringa encontrado: <span class="text-white underline font-bold ml-1">${joker.data().name}</span>`;
-                } else {
-                    el.innerHTML = `🃏 O Coringa ainda está no baralho...`;
-                }
-            });
-        }
-
-        async function processDraw(name, insta, gender, interest) {
-            const uid = currentUser.uid;
-            
-            const suits = [
-                { name: 'Copas', symbol: '♥️', color: '#b91c1c' },
-                { name: 'Espadas', symbol: '♠', color: '#1a1a1a' },
-                { name: 'Ouros', symbol: '♦', color: '#b91c1c' },
-                { name: 'Trevos', symbol: '♣', color: '#1a1a1a' }
-            ];
-            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
-            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
-            const randomValue = values[Math.floor(Math.random() * values.length)];
-            const matchCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-
-            let isJoker = false;
-            
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const jokerSnap = await transaction.get(jokerRef);
-                    if (!jokerSnap.exists() || !jokerSnap.data().taken) {
-                        if (Math.random() < 0.05) { // 5% chance
-                            isJoker = true;
-                            transaction.set(jokerRef, { taken: true, winner: uid, name: name });
-                        }
-                    }
-                });
-            } catch (e) { console.error(e); }
-
-            let genderText = interest === 'f' ? "uma MULHER" : (interest === 'm' ? "um HOMEM" : "ALGUÉM");
-            let suggestion = isJoker ? "Você é o Caos! Encontre quem você quiser para o seu Match Perfeito." :
-                `Encontre ${genderText} com o naipe de ${randomSuit.name}!`;
-
-            const participantData = {
-                uid: uid,
-                name: name,
-                instagram: insta,
-                gender: gender,
-                interest: interest,
-                suitName: isJoker ? 'Coringa' : randomSuit.name,
-                suitSymbol: isJoker ? '🎭' : randomSuit.symbol,
-                cardValue: isJoker ? 'J' : randomValue,
-                color: isJoker ? '#a855f7' : randomSuit.color,
-                is_joker: isJoker,
-                matchCode: matchCode,
-                suggestion: suggestion,
-                createdAt: new Date().toISOString()
-            };
-
-            await setDoc(participantsRef(uid), participantData);
-            localStorage.setItem('festa_uid_final_scale', uid);
-            showMyCard(participantData);
-        }
-
-        function showMyCard(data) {
-            myData = data;
-
-            document.getElementById('registrationSection').classList.add('hidden-section');
-            document.getElementById('shuffleSection').classList.add('hidden-section');
-            document.getElementById('revealSection').classList.remove('hidden-section');
-
-            document.getElementById('topValue').innerText = data.cardValue;
-            document.getElementById('topSymbol').innerText = data.suitSymbol;
-            document.getElementById('botValue').innerText = data.cardValue;
-            document.getElementById('botSymbol').innerText = data.suitSymbol;
-
-            const cardContent = document.getElementById('cardContent');
-            const mainValue = document.getElementById('mainValue');
-            const mainSuit = document.getElementById('mainSuit');
-
-            if (data.is_joker) {
-                mainValue.innerText = 'JOKER';
-                mainValue.className = 'text-5xl font-black leading-none tracking-widest';
-                mainSuit.innerText = '🤡';
-                mainSuit.className = 'text-[6rem] mt-2 drop-shadow-xl';
-
-                cardContent.classList.add('joker-card-front');
-                cardContent.classList.add('joker-glow');
-                document.getElementById('finalCard').classList.remove('joker-glow');
-
-                document.getElementById('jokerMessage').classList.remove('hidden');
-                document.getElementById('jokerPrize').classList.remove('hidden');
-            } else {
-                mainValue.innerText = data.cardValue;
-                mainValue.className = 'text-[7rem] font-black leading-none drop-shadow-sm';
-                mainSuit.innerText = data.suitSymbol;
-                mainSuit.className = 'text-7xl mt-2 drop-shadow-md opacity-90';
-
-                cardContent.classList.remove('joker-card-front');
-                cardContent.classList.remove('joker-glow');
-                document.getElementById('finalCard').classList.remove('joker-glow');
-
-                document.getElementById('jokerMessage').classList.add('hidden');
-                document.getElementById('jokerPrize').classList.add('hidden');
-            }
-
-            cardContent.style.color = data.color;
-
-            document.getElementById('myMatchCode').innerText = data.matchCode;
-            document.getElementById('suitName').innerText = data.suitName;
-            document.getElementById('matchSuggestion').innerText = data.suggestion;
-
-            setTimeout(() => {
-                const finalCard = document.getElementById('finalCard');
-                if (finalCard) finalCard.classList.add('is-flipped');
-            }, 600);
-        }
-
-        function processMatchResult(other) {
-            const matchMsg = document.getElementById('matchMsg');
-            const voucherDiv = document.getElementById('prizeVoucher');
-
-            const iWantThem = ['all', 'party'].includes(myData.interest) || myData.interest === other.gender;
-            const theyWantMe = ['all', 'party'].includes(other.interest) || other.interest === myData.gender;
-            const cardsMatch = (myData.suitName === other.suitName) || myData.is_joker || other.is_joker;
-
-            const instaDisplay = other.instagram ? `<br><a href="https://instagram.com/${other.instagram.replace('@', '')}" target="_blank" class="text-pink-400 text-sm mt-3 inline-block bg-white/10 px-4 py-2 rounded-full border border-pink-500/30 active:scale-95 transition"><i class="fab fa-instagram"></i> ${other.instagram}</a>` : '';
-
-            if (iWantThem && theyWantMe && cardsMatch) {
-                if (myData.interest === 'party' || other.interest === 'party') {
-                    matchMsg.innerHTML = `PARCEIROS DE COPO! 🍻<br>O cassino uniu vocês para curtir. ${instaDisplay}`;
-                } else {
-                    matchMsg.innerHTML = `O DESTINO FALOU! ✨<br>Você e ${other.name} combinam perfeitamente. ${instaDisplay}`;
-                }
-
-                // 🔥 CORREÇÃO DO GOLPE DO SHOT DUPLO 🔥
-                const sortedCodes = [myData.matchCode, other.matchCode].sort();
-                const prizeId = `ROYAL-${sortedCodes[0]}-${sortedCodes[1]}`;
-                
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${prizeId}`;
-                document.getElementById('qrCodeImg').src = qrUrl;
-                document.getElementById('voucherCode').innerText = prizeId;
-                if (voucherDiv) voucherDiv.classList.remove('hidden');
-                confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
-                
-            } else if (cardsMatch && (!iWantThem || !theyWantMe)) {
-                matchMsg.innerHTML = `As cartas combinam, mas as preferências de vocês não batem nessa rodada! 😉 ${instaDisplay}`;
-                if (voucherDiv) voucherDiv.classList.add('hidden');
-            } else {
-                matchMsg.innerHTML = `Naipes diferentes! O segredo é continuar procurando o seu par real pela festa. 🥃 ${instaDisplay}`;
-                if (voucherDiv) voucherDiv.classList.add('hidden');
-            }
-            
-            document.getElementById('matchModal').classList.remove('hidden');
-        }
-
-        initAuth();
-    </script>
+    <script type="module" src="../js/app.js"></script>
 </body>
 
 </html>

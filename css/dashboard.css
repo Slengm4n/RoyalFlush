@@ -1,0 +1,130 @@
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
+
+        :root {
+            --gold: #d4af37;
+            --wine-dark: #2a0505;
+            --wine-bright: #450a0a;
+        }
+
+        html, body {
+            background-color: #000;
+            color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, var(--wine-bright) 0%, #000000 100%);
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            overflow: hidden; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        *, *::before, *::after { box-sizing: inherit; }
+
+        input[type="text"], input[type="password"] { font-size: 16px !important; }
+
+        .casino-title {
+            font-family: 'UnifrakturMaguntia', cursive;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+        }
+
+        /* Letreiro Flutuante */
+        .marquee-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 2px solid var(--gold);
+            border-bottom: 2px solid var(--gold);
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            padding: 12px 0;
+            width: 100%;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+        
+        @media (min-width: 768px) { .marquee-content { font-size: 1.6rem; } }
+
+        @keyframes marquee {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Cartas do Telão Reais */
+        .telao-card {
+            width: 90px;
+            height: 130px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--gold);
+            background: #fff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            position: relative;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: transform 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .telao-card {
+                width: 110px;
+                height: 160px;
+                border-width: 3px;
+                border-radius: 12px;
+            }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) translateY(50px) rotate(-15deg); opacity: 0; }
+            100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+
+        .joker-card-front {
+            background: linear-gradient(135deg, #1a1a1a 0%, #3b0764 100%) !important;
+            color: #d8b4fe !important;
+            border-color: #a855f7 !important;
+        }
+
+        .joker-glow {
+            box-shadow: 0 0 30px #a855f7, 0 0 60px rgba(168, 85, 247, 0.5);
+            animation: jokerPulse 2s infinite alternate;
+        }
+
+        @keyframes jokerPulse {
+            0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+            100% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.8); }
+        }
+
+        .qr-glow {
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+            animation: qrPulse 3s infinite alternate;
+        }
+
+        @keyframes qrPulse {
+            0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
+            100% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.6); }
+        }
+        
+        /* Oculta scrollbar mas permite scroll */
+        #cardsGrid::-webkit-scrollbar { display: none; }
+        #cardsGrid { -ms-overflow-style: none; scrollbar-width: none; }
