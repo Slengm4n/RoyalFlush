@@ -115,16 +115,32 @@ export function showMyCard(data) {
 }
 
 export function processMatchResult(other) {
+    // 1. Definir os elementos primeiro para não dar erro de "undefined"
     const matchMsg = el('matchMsg');
     const voucherDiv = el('prizeVoucher');
+    
+    // 2. Lógica de Cooldown
+    const COOLDOWN_TIME = 30 * 1000; // 30 segundos
+    const lastMatch = localStorage.getItem('lastMatchTimeStamp');
+    const now = Date.now();
 
-    const iWantThem = ['all', 'party'].includes(myData.interest) || myData.interest === other.gender;
-    const theyWantMe = ['all', 'party'].includes(other.interest) || other.interest === myData.gender;
+    if (lastMatch && (now - lastMatch < COOLDOWN_TIME)) {
+        if (matchMsg) matchMsg.innerHTML = `<span class="text-yellow-500">Aguarde um pouco antes de buscar o próximo destino...</span>`;
+        if (el('matchModal')) el('matchModal').classList.remove('hidden');
+        return;
+    }
+
+    // 3. Verificação de Match (Considerando naipes ou Coringa)
+    // Importante: Verifique se 'myData' está disponível neste arquivo
     const cardsMatch = (myData.suitName === other.suitName) || myData.is_joker || other.is_joker;
 
     const instaDisplay = other.instagram ? `<br><a href="https://instagram.com/${other.instagram.replace('@', '')}" target="_blank" class="text-pink-400 text-sm mt-3 inline-block bg-white/10 px-4 py-2 rounded-full border border-pink-500/30 active:scale-95 transition"><i class="fab fa-instagram"></i> ${other.instagram}</a>` : '';
 
-    if (iWantThem && theyWantMe && cardsMatch) {
+    // 4. Se deu Match
+    if (cardsMatch) {
+        // Salva o timestamp apenas se o match for bem-sucedido
+        localStorage.setItem('lastMatchTimeStamp', Date.now());
+
         if (matchMsg) matchMsg.innerHTML = `O DESTINO FALOU! ✨<br>Tu e ${other.name} combinam perfeitamente. ${instaDisplay}`;
 
         const sortedCodes = [myData.matchCode, other.matchCode].sort();
@@ -132,14 +148,20 @@ export function processMatchResult(other) {
 
         if (el('qrCodeImg')) el('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${prizeId}`;
         if (el('voucherCode')) el('voucherCode').innerText = prizeId;
-        if (voucherDiv) voucherDiv.classList.remove('hidden');
+        
+        if (voucherDiv) {
+            voucherDiv.classList.remove('hidden');
+            voucherDiv.style.display = 'block'; // Força a exibição
+        }
         
         if (typeof confetti === 'function') confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
     } else {
-        if (matchMsg) matchMsg.innerHTML = `Naipes diferentes ou as vossas vibes não batem! Continuem a procurar... 🥃 ${instaDisplay}`;
+        // Se NÃO deu match
+        if (matchMsg) matchMsg.innerHTML = `Ops! Os naipes não batem... <br> Tente encontrar alguém de <strong>${myData.suitName}</strong>!`;
         if (voucherDiv) voucherDiv.classList.add('hidden');
     }
 
+    // Abre o modal em ambos os casos
     if (el('matchModal')) el('matchModal').classList.remove('hidden');
 }
 
@@ -254,10 +276,6 @@ export async function shareToInstagram() {
 
                 <div style="display:flex;align-items:center;gap:20px;margin-top:18px;flex-shrink:0;">
                     <div style="width:90px;height:1px;background:rgba(212,175,55,0.38);"></div>
-                    <span style="font-size:19px;letter-spacing:8px;color:rgba(212,175,55,0.55);
-                        text-transform:uppercase;font-family:Georgia,serif;white-space:nowrap;">
-                        Uma missão. Uma noite.
-                    </span>
                     <div style="width:90px;height:1px;background:rgba(212,175,55,0.38);"></div>
                 </div>
             </div>
@@ -319,11 +337,11 @@ export async function shareToInstagram() {
                 <div style="text-align:center;margin-bottom:20px;">
                     <p style="margin:0 0 8px;font-size:40px;font-weight:700;
                         color:#f5f0e8;font-family:Georgia,serif;line-height:1.2;">
-                        Encontre seu par. Ganhe um shot.
+                        Encontre seu par e ganhe um shot da Sagui!
                     </p>
                     <p style="margin:0;font-size:24px;color:rgba(212,175,55,0.68);
                         letter-spacing:1px;font-family:Georgia,serif;font-style:italic;">
-                        — mas primeiro você precisa saber o jogo.
+                        — mas primeiro você precisa entrar no jogo.
                     </p>
                 </div>
 

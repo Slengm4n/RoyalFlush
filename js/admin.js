@@ -1,6 +1,14 @@
-import { auth, db, participantsCol, jokerRef, vouchersCol, getParticipantDoc, getVoucherDoc } from "./firebase.js";
+import { auth, db, participantsCol, jokerRef, vouchersCol, getParticipantDoc, getVoucherDoc, appId } from "./firebase.js";
+
+// 2. Importações de Autenticação
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// 3. Importações do Firestore (Adicionei o 'doc' aqui)
+import { getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// 🔥 CRIAMOS A REFERÊNCIA DO ESTADO DO JOGO AQUI:
+const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'game_state');
+
 
 let currentUser = null;
 
@@ -109,6 +117,22 @@ window.resetJoker = async () => {
         await deleteDoc(jokerRef);
         alert("Coringa resetado e devolvido ao baralho!");
     } catch (e) { console.error(e); }
+};
+
+window.triggerEndGame = async () => {
+    if (!confirm("🚨 ATENÇÃO: Isso vai encerrar o jogo e exibir as estatísticas finais no telão. Todo mundo vai ver. Tem certeza?")) return;
+
+    try {
+        // Grava no Firebase que o jogo acabou. O Telão (dashboard.js) vai ouvir essa mudança.
+        await setDoc(gameStateRef, { 
+            isGameOver: true, 
+            endedAt: new Date().toISOString() 
+        });
+        alert("🏁 Festa encerrada com sucesso! Olhe para o telão.");
+    } catch (error) {
+        console.error("Erro ao encerrar:", error);
+        alert("Erro ao comunicar com o telão.");
+    }
 };
 
 // --- INICIALIZAÇÃO ---

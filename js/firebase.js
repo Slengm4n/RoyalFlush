@@ -20,6 +20,9 @@ export const appId = 'festa-royal-flush';
 export const participantsCol = collection(db, 'artifacts', appId, 'public', 'data', 'participants');
 export const jokerRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'joker_status');
 export const vouchersCol = collection(db, 'artifacts', appId, 'public', 'data', 'vouchers');
+export const matchesCol = collection(db, 'artifacts', appId, 'public', 'data', 'matches');
+// Adicione junto das outras exportações no firebase.js
+export const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'game_state');
 
 // Funções de Referência de Documentos
 export const getParticipantDoc = (id) => doc(db, 'artifacts', appId, 'public', 'data', 'participants', id);
