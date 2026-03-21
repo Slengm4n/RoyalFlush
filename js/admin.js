@@ -1,35 +1,38 @@
-import { auth, db, participantsCol, jokerRef, vouchersCol, getParticipantDoc, getVoucherDoc, appId } from "./firebase.js";
-
-// 2. Importações de Autenticação
+import { auth, db, participantsCol, jokerRef, getParticipantDoc, getVoucherDoc, appId } from "./firebase.js";
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { 
+    getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, doc,
+    query, where, limit 
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// 3. Importações do Firestore (Adicionei o 'doc' aqui)
-import { getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// 🔥 CRIAMOS A REFERÊNCIA DO ESTADO DO JOGO AQUI:
 const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'game_state');
-
-
 let currentUser = null;
+
+// 🔥 CACHE DE DOM (Evita o JavaScript ficar procurando coisas no HTML repetidas vezes)
+const domCache = {};
+const el = (id) => {
+    if (!domCache[id]) domCache[id] = document.getElementById(id);
+    return domCache[id];
+};
 
 // --- EXPOSIÇÃO PARA O HTML ---
 window.checkPassword = (e) => {
     e.preventDefault();
-    const pwd = document.getElementById('adminPassword').value;
+    const pwd = el('adminPassword').value;
     if (pwd === "royal2026") {
         sessionStorage.setItem('admin_auth_party', 'true');
-        document.getElementById('loginOverlay').style.display = 'none';
+        el('loginOverlay').style.display = 'none';
         if (!currentUser) initFirebase();
     } else {
         alert("Senha incorreta!");
-        document.getElementById('adminPassword').value = '';
+        el('adminPassword').value = '';
     }
 };
 
 window.validateVoucher = async (e) => {
     e.preventDefault();
-    const input = document.getElementById('voucherInput');
-    const statusDiv = document.getElementById('voucherStatus');
+    const input = el('voucherInput');
+    const statusDiv = el('voucherStatus');
     const code = input.value.trim().toUpperCase();
 
     if (!code) return;
@@ -40,14 +43,14 @@ window.validateVoucher = async (e) => {
         if (vSnap.exists()) {
             const time = new Date(vSnap.data().usedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             statusDiv.innerHTML = `
-                <div class="w-full bg-red-950/90 text-red-200 p-5 rounded-xl border-2 border-red-500 shadow-lg text-center">
+                <div class="w-full bg-red-950/90 text-red-200 p-5 rounded-xl border-2 border-red-500 shadow-lg text-center animate-[popIn_0.3s_ease-out]">
                     <h3 class="font-black text-xl">JÁ UTILIZADO!</h3>
                     <p class="text-xs mt-1">Resgatado às <strong>${time}</strong>.</p>
                 </div>`;
         } else if (code.startsWith('ROYAL-') || code.startsWith('MATCH-')) {
             await setDoc(getVoucherDoc(code), { usedAt: new Date().toISOString(), code });
             statusDiv.innerHTML = `
-                <div class="w-full bg-green-950/90 text-green-200 p-5 rounded-xl border-2 border-green-500 shadow-lg animate-pulse text-center">
+                <div class="w-full bg-green-950/90 text-green-200 p-5 rounded-xl border-2 border-green-500 shadow-lg animate-[popIn_0.3s_ease-out] text-center">
                     <h3 class="font-black text-xl">VÁLIDO! 🥂</h3>
                     <p class="text-xs mt-1">Pode servir o Shot Duplo!</p>
                 </div>`;
@@ -65,33 +68,34 @@ window.validateVoucher = async (e) => {
 window.randomizeJoker = async () => {
     if (!confirm("Transferir o Coringa para alguém aleatório?")) return;
     try {
-        const snap = await getDocs(participantsCol);
-        const candidates = snap.docs.filter(d => !d.data().is_joker);
-        const currentJoker = snap.docs.find(d => d.data().is_joker);
+        // 🔥 OTIMIZAÇÃO: Buscamos apenas quem não é coringa para sortear
+        const candidatesQ = query(participantsCol, where("is_joker", "==", false));
+        const candidatesSnap = await getDocs(candidatesQ);
+        
+        if (candidatesSnap.empty) return alert("Sem candidatos disponíveis na mesa!");
 
-        if (candidates.length === 0) return alert("Sem candidatos disponíveis na mesa!");
+        // 🔥 OTIMIZAÇÃO: Buscamos o coringa atual direto ao ponto
+        const currentJokerQ = query(participantsCol, where("is_joker", "==", true), limit(1));
+        const currentJokerSnap = await getDocs(currentJokerQ);
 
-        if (currentJoker) {
-            await updateDoc(getParticipantDoc(currentJoker.id), {
+        if (!currentJokerSnap.empty) {
+            const currentJokerId = currentJokerSnap.docs[0].id;
+            await updateDoc(getParticipantDoc(currentJokerId), {
                 is_joker: false, 
-                suitName: 'Trevos', 
-                suitSymbol: '♣', 
-                cardValue: '2', 
-                color: '#1a1a1a',
+                suitName: 'Trevos', suitSymbol: '♣', cardValue: '2', color: '#1a1a1a',
                 suggestion: 'Encontre alguém com o naipe de Trevos!'
             });
         }
 
-        const newJokerDoc = candidates[Math.floor(Math.random() * candidates.length)];
+        const newJokerDoc = candidatesSnap.docs[Math.floor(Math.random() * candidatesSnap.docs.length)];
         const data = newJokerDoc.data();
+        
         await updateDoc(getParticipantDoc(newJokerDoc.id), {
             is_joker: true, 
-            suitName: 'Coringa', 
-            suitSymbol: '🎭', 
-            cardValue: 'J', 
-            color: '#a855f7',
+            suitName: 'Coringa', suitSymbol: '🎭', cardValue: 'J', color: '#a855f7',
             suggestion: 'Você é o Caos! Encontre quem você quiser.'
         });
+        
         await setDoc(jokerRef, { taken: true, winner: data.uid, name: data.name });
         alert(`Novo Coringa sorteado: ${data.name.toUpperCase()}`);
     } catch (e) { console.error(e); }
@@ -100,17 +104,15 @@ window.randomizeJoker = async () => {
 window.resetJoker = async () => {
     if (!confirm("Devolver Coringa ao baralho e remover do jogador atual?")) return;
     try {
-        const snap = await getDocs(participantsCol);
-        const currentJoker = snap.docs.find(d => d.data().is_joker);
+        // 🔥 OTIMIZAÇÃO: Vai direto no documento do Coringa em vez de baixar todos
+        const currentJokerQ = query(participantsCol, where("is_joker", "==", true), limit(1));
+        const currentJokerSnap = await getDocs(currentJokerQ);
         
-        if (currentJoker) {
-            // CORREÇÃO: Transforma a carta de volta numa carta perfeitamente normal!
-            await updateDoc(getParticipantDoc(currentJoker.id), { 
+        if (!currentJokerSnap.empty) {
+            const currentJokerId = currentJokerSnap.docs[0].id;
+            await updateDoc(getParticipantDoc(currentJokerId), { 
                 is_joker: false,
-                suitName: 'Trevos', 
-                suitSymbol: '♣', 
-                cardValue: '2', 
-                color: '#1a1a1a',
+                suitName: 'Trevos', suitSymbol: '♣', cardValue: '2', color: '#1a1a1a',
                 suggestion: 'Encontre ALGUÉM com o naipe de Trevos!'
             });
         }
@@ -121,13 +123,8 @@ window.resetJoker = async () => {
 
 window.triggerEndGame = async () => {
     if (!confirm("🚨 ATENÇÃO: Isso vai encerrar o jogo e exibir as estatísticas finais no telão. Todo mundo vai ver. Tem certeza?")) return;
-
     try {
-        // Grava no Firebase que o jogo acabou. O Telão (dashboard.js) vai ouvir essa mudança.
-        await setDoc(gameStateRef, { 
-            isGameOver: true, 
-            endedAt: new Date().toISOString() 
-        });
+        await setDoc(gameStateRef, { isGameOver: true, endedAt: new Date().toISOString() });
         alert("🏁 Festa encerrada com sucesso! Olhe para o telão.");
     } catch (error) {
         console.error("Erro ao encerrar:", error);
@@ -143,43 +140,63 @@ function initFirebase() {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
+        
+        // --- OUVINTE DA GRID OTIMIZADO ---
         onSnapshot(participantsCol, (snapshot) => {
-            const grid = document.getElementById('cardsGrid');
-            const total = document.getElementById('totalPlayers');
-            const jokerName = document.getElementById('jokerName');
-
-            // Verifica se o elemento existe antes de alterar para evitar o erro "null"
-            if (total) total.innerText = snapshot.size;
-            if (grid) grid.innerHTML = '';
+            const totalEl = el('totalPlayers');
+            if (totalEl) totalEl.innerText = snapshot.size;
             
-            let jokerFound = false;
+            const grid = el('cardsGrid');
+            if (!grid) return;
 
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if (d.is_joker) {
-                    if (jokerName) jokerName.innerText = d.name;
-                    jokerFound = true;
+            let jokerFound = false;
+            const jokerNameEl = el('jokerName');
+
+            // 🔥 MÁGICA DE PERFORMANCE: Só atualiza o que mudou (docChanges)
+            snapshot.docChanges().forEach(change => {
+                const docId = change.doc.id;
+                const d = change.doc.data();
+
+                if (change.type === "added") {
+                    grid.insertAdjacentHTML('beforeend', getMiniCardHTML(docId, d));
                 }
-                if (grid) renderMiniCard(grid, d);
+                if (change.type === "modified") {
+                    const existingCard = el(`admin-card-${docId}`);
+                    if (existingCard) existingCard.outerHTML = getMiniCardHTML(docId, d);
+                }
+                if (change.type === "removed") {
+                    const existingCard = el(`admin-card-${docId}`);
+                    if (existingCard) existingCard.remove();
+                }
+
+                // Verifica o Coringa
+                if (d.is_joker) {
+                    jokerFound = true;
+                    if (jokerNameEl) jokerNameEl.innerText = d.name;
+                }
             });
 
-            // Verifica se o elemento existe antes de alterar
-            if (!jokerFound && jokerName) jokerName.innerText = "Ninguém tirou ainda";
+            // Se o coringa foi resetado/removido
+            if (!jokerFound && jokerNameEl && snapshot.size > 0) {
+                // Passa rapidamente pelos atuais só para garantir
+                const hasJokerNow = snapshot.docs.some(doc => doc.data().is_joker);
+                if(!hasJokerNow) jokerNameEl.innerText = "Ninguém tirou ainda";
+            }
         });
     }
 });
 
-function renderMiniCard(container, d) {
+// 🔥 OTIMIZAÇÃO: Função separada apenas para gerar o HTML da cartinha (com ID único para o DOM achar rápido)
+function getMiniCardHTML(docId, d) {
     const isJ = d.is_joker;
-    
     const instaRaw = d.instagram || '';
     const instaClean = instaRaw.replace('@', '');
     const instaHTML = instaClean 
         ? `<a href="https://instagram.com/${instaClean}" target="_blank" class="text-[10px] text-pink-400 hover:text-pink-300 mt-1 truncate w-full text-center" title="Ver Instagram"><i class="fab fa-instagram"></i> @${instaClean}</a>` 
         : `<span class="text-[9px] text-gray-600 mt-1">Sem Insta</span>`;
 
-    const html = `
-        <div class="flex flex-col items-center w-[80px]">
+    return `
+        <div id="admin-card-${docId}" class="flex flex-col items-center w-[80px] animate-[popIn_0.3s_ease-out]">
             <div class="mini-card ${isJ ? 'joker-glow' : ''} bg-white hover:-translate-y-2 transition-transform duration-300" style="color: ${d.color}; border-color: var(--gold);">
                 <span class="text-3xl font-black">${d.cardValue}</span>
                 <span class="text-2xl mt-1">${d.suitSymbol}</span>
@@ -188,5 +205,4 @@ function renderMiniCard(container, d) {
             ${instaHTML}
             <span class="text-[9px] text-gold font-mono mt-1">${d.matchCode}</span>
         </div>`;
-    container.innerHTML += html;
 }

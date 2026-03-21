@@ -1,0 +1,24 @@
+{
+  "name": "royalflush",
+  "version": "1.0.0",
+  "description": "App de match feito para Atlética Sagui",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Slengm4n/RoyalFlush.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Slengm4n/RoyalFlush/issues"
+  },
+  "homepage": "https://github.com/Slengm4n/RoyalFlush#readme",
+  "dependencies": {
+    "tailwindcss": "^4.2.2"
+  }
+}
