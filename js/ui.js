@@ -14,18 +14,26 @@ export function closeHelp() {
 }
 
 export function toggleDropdown(type) {
-    const options = el(type + 'Options');
-    const otherType = type === 'gender' ? 'interest' : 'gender';
-    const otherOptions = el(otherType + 'Options');
-    
-    if (otherOptions) otherOptions.classList.remove('active');
-    if (options) options.classList.toggle('active');
+    const all = ['gender', 'interest'];
+
+    all.forEach(d => {
+        if (d !== type) {
+            document.getElementById(d + 'Options')?.classList.remove('active');
+            document.getElementById(d + 'Dropdown')?.classList.remove('active');
+        }
+    });
+
+    const options = document.getElementById(type + 'Options');
+    const dropdown = document.getElementById(type + 'Dropdown');
+    options?.classList.toggle('active');
+    dropdown?.classList.toggle('active');
 }
 
 export function selectOption(type, value, label) {
     const input = el('user' + type.charAt(0).toUpperCase() + type.slice(1));
     const labelEl = el(type + 'Label');
     const optionsEl = el(type + 'Options');
+    const dropdownEl = el(type + 'Dropdown');
 
     if (input) input.value = value;
     if (labelEl) {
@@ -33,12 +41,13 @@ export function selectOption(type, value, label) {
         labelEl.style.color = '#d4af37'; // Dourado
     }
     if (optionsEl) optionsEl.classList.remove('active');
+    if (dropdownEl) dropdownEl.classList.remove('active');
 }
 
 export function closeMatch() {
     const modal = el('matchModal');
     const input = el('targetCode');
-    
+
     if (modal) modal.classList.add('hidden');
     if (input) input.value = ""; // Já limpa o código quando a pessoa fecha a janela
 }
@@ -46,6 +55,7 @@ export function closeMatch() {
 // Fecha dropdowns ao clicar fora (Já estava perfeito e super otimizado)
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select')) {
-        document.querySelectorAll('.select-options').forEach(opt => opt.classList.remove('active'));
+        document.querySelectorAll('.select-options').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('active'));
     }
 });

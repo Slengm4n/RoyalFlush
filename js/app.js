@@ -1,17 +1,17 @@
 // 1. IMPORTAÇÕES DO SEU FIREBASE.JS
-import { auth, participantsCol, getParticipantDoc, db } from "./firebase.js";
+import { auth, participantsCol, getParticipantDoc, db, matchesCol } from "./firebase.js";
 
 // 2. IMPORTAÇÕES DE AUTENTICAÇÃO
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 // 3. IMPORTAÇÕES DO FIRESTORE (Adicionado query, where e limit para otimização extrema)
-import { 
-    getDoc, 
-    getDocs, 
-    onSnapshot, 
-    collection, 
-    addDoc, 
-    updateDoc, 
+import {
+    getDoc,
+    getDocs,
+    onSnapshot,
+    collection,
+    addDoc,
+    updateDoc,
     arrayUnion,
     query,
     where,
@@ -21,9 +21,7 @@ import {
 // 4. IMPORTAÇÕES LOCAIS
 import * as ui from "./ui.js";
 import * as game from "./game.js";
-import * as admin from "./admin.js";
 
-const matchesCol = collection(db, "matches");
 let currentUser = null;
 
 /**
@@ -43,7 +41,7 @@ window.showToast = (title, message, type = 'warning') => {
 
     const toast = document.createElement('div');
     toast.id = 'customToast';
-    
+
     let styleClasses = '';
     let iconHTML = '';
 
@@ -100,7 +98,7 @@ window.handleRegistration = async () => {
 
     // 🔥 OTIMIZAÇÃO DE UX: Desabilita o botão e mostra Loading
     const btn = document.getElementById('drawBtn');
-    if(btn) {
+    if (btn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Embaralhando...';
         btn.disabled = true;
         btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -127,7 +125,7 @@ window.checkMatch = async () => {
     const inputCode = targetInput.value.trim().toUpperCase();
 
     const lastAttempt = localStorage.getItem('last_match_attempt');
-    if (lastAttempt && (Date.now() - lastAttempt < 60000)) {
+    if (lastAttempt && (Date.now() - Number(lastAttempt) < 60000)) {
         const remaining = Math.ceil((60000 - (Date.now() - lastAttempt)) / 1000);
         window.showToast("Muita Calma!", `Aguarde ${remaining}s antes de tentar novamente.`, "warning");
         return;
@@ -139,7 +137,7 @@ window.checkMatch = async () => {
         return;
     }
 
-    game.startCooldownUI?.(validateBtn, targetInput); 
+    startCooldownUI(validateBtn, targetInput);
 
     try {
         // 🔥 OTIMIZAÇÃO EXTREMA: Em vez de baixar todos, baixa apenas 1 documento
@@ -154,7 +152,7 @@ window.checkMatch = async () => {
         }
 
         const otherData = snapshot.docs[0].data();
-        
+
         const sortedCodes = [game.myData.matchCode, otherData.matchCode].sort();
         const prizeId = `ROYAL-${sortedCodes[0]}-${sortedCodes[1]}`;
 
@@ -232,7 +230,7 @@ function startCooldownUI(button, input) {
 function monitorJokerStatus() {
     // 🔥 OTIMIZAÇÃO: Busca apenas o Coringa em vez de baixar todo mundo o tempo todo
     const jokerQuery = query(participantsCol, where("is_joker", "==", true), limit(1));
-    
+
     onSnapshot(jokerQuery, (snapshot) => {
         const el = document.getElementById('jokerStatus');
         if (!el) return;

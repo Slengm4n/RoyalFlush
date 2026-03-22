@@ -1,5 +1,371 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=UnifrakturMaguntia&display=swap');
 
-/* Cole aqui o seu CSS customizado (glass-panel, casino-title, etc) */
+@import "tailwindcss";
+
+/* =========================================
+   1. VARIÁVEIS E BASE (Preservando suas cores)
+========================================= */
+:root {
+    --gold: #d4af37;
+    --gold-bright: #fcd34d;
+    --wine-dark: #2a0505;
+    --wine-bright: #450a0a;
+}
+
+@layer base {
+    html {
+        background-color: #000;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
+    body {
+        color: #f8fafc;
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at center, var(--wine-bright) 0%, #000000 100%);
+        min-height: 100dvh;
+        /* Melhorado para mobile */
+        width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: inherit;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        font-size: 16px !important;
+    }
+
+    #cardsGrid::-webkit-scrollbar {
+        display: none;
+    }
+
+    #cardsGrid {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}
+
+.hidden-section {
+    display: none !important;
+}
+
+/* =========================================
+   2. COMPONENTES GERAIS
+========================================= */
+@layer components {
+    .casino-title {
+        font-family: 'UnifrakturMaguntia', cursive !important;
+        color: var(--gold);
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        letter-spacing: 2px;
+    }
+
+    .glass-panel {
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 2px solid var(--gold);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+        position: relative;
+        transform: translateZ(0);
+        /* Performance GPU */
+    }
+
+    .btn-gold {
+        background: linear-gradient(to bottom, #d4af37, #aa8a2e);
+        color: black;
+        font-weight: 900;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.1s ease;
+    }
+
+    .btn-gold:active {
+        transform: scale(0.98);
+    }
+
+    /* =========================================
+       3. CARTAS (TELÃO E MOBILE)
+    ========================================= */
+    .telao-card {
+        width: 90px;
+        height: 130px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #ffffff 0%, #f4ebd8 100%);
+        border: 1px solid var(--gold);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6), inset 0 0 0 3px #ffffff, inset 0 0 0 4px var(--gold);
+        position: relative;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        transition: all 0.3s ease;
+        color: #111;
+        font-weight: 800;
+    }
+
+    .card-container {
+        width: 260px;
+        height: 380px;
+        perspective: 1000px;
+        max-width: 90vw;
+        margin: 0 auto;
+    }
+
+    .card-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .card-inner.is-flipped {
+        transform: rotateY(180deg);
+    }
+
+    .card-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 4px solid var(--gold);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+    }
+
+    .card-front {
+        background: #fdfdfd;
+        background-image: radial-gradient(#ffffff 0%, #e5e5e5 100%);
+        color: black;
+        transform: rotateY(180deg);
+    }
+
+    .card-back {
+        background: #1a1a1a;
+        background-image: repeating-linear-gradient(45deg, #2a0505 0, #2a0505 2px, transparent 0, transparent 50%);
+        background-size: 15px 15px;
+        border: 6px solid var(--gold);
+    }
+
+    /* =========================================
+       4. SELECTS E VOUCHER (Correção do Bug)
+    ========================================= */
+    .custom-select {
+    position: relative;
+    width: 100%;
+    z-index: 10; /* Z-index baixo quando fechado */
+}
+
+   .custom-select.active {
+    z-index: 999; 
+}
+
+    .select-trigger {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        font-size: 16px;
+    }
+
+    .select-options {
+    position: absolute; /* Isso faz ele flutuar */
+    top: calc(100% + 5px); /* Posiciona logo abaixo do gatilho */
+    left: 0;
+    right: 0;
+    background-color: #161616; /* Cor sólida para não ficar transparente */
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+    display: none; /* Começa escondido */
+    z-index: 1000; /* Garante que fica acima de tudo */
+    overflow: hidden;
+}
+
+    .select-options.active {
+        display: block;
+        animation: fadeInDown 0.2s ease-out;
+    }
+
+    .option-item {
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ccc;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+    .voucher-ticket {
+        background: #fff;
+        color: #000;
+        padding: 20px;
+        border-radius: 10px;
+        position: relative;
+        border: 2px dashed var(--gold);
+    }
+
+    .voucher-ticket::before,
+    .voucher-ticket::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #000;
+        /* Simula o furo */
+        border-radius: 50%;
+        top: 50%;
+        margin-top: -10px;
+    }
+
+    .voucher-ticket::before {
+        left: -12px;
+    }
+
+    .voucher-ticket::after {
+        right: -12px;
+    }
+}
+
+/* =========================================
+   5. ANIMAÇÕES (KEYFRAMES OTIMIZADOS)
+========================================= */
+@keyframes marquee {
+    0% {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0) translateY(50px) rotate(-15deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes shuffle {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    25% {
+        transform: translate3d(-15px, 0, 0) rotate(-3deg);
+    }
+
+    50% {
+        transform: translate3d(15px, 0, 0) rotate(3deg);
+    }
+}
+
+@keyframes jokerPulse {
+    0% {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 50px rgba(168, 85, 247, 0.8);
+    }
+}
+
+@keyframes qrPulse {
+    0% {
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+    }
+
+    100% {
+        box-shadow: 0 0 60px rgba(212, 175, 55, 0.6);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Classes de Animação */
+.shuffling {
+    animation: shuffle 0.2s infinite;
+}
+
+.marquee-content {
+    animation: marquee 30s linear infinite;
+    will-change: transform;
+}
+
+.joker-glow {
+    animation: jokerPulse 2s infinite alternate;
+}
+
+.qr-glow {
+    animation: qrPulse 3s infinite alternate;
+}
+
+/* Mini Cards Admin */
+.mini-card {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--gold);
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.mini-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+    border-radius: 6px;
+}

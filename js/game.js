@@ -6,9 +6,7 @@ export let myData = null;
 // 🔥 OTIMIZAÇÃO: Cache de DOM. Se o JS já achou o elemento uma vez, não precisa procurar no HTML de novo.
 const domCache = {};
 const el = (id) => {
-    if (!domCache[id]) {
-        domCache[id] = document.getElementById(id);
-    }
+    if (!(id in domCache)) domCache[id] = document.getElementById(id);
     return domCache[id];
 };
 
@@ -24,7 +22,7 @@ export async function processDraw(currentUser, name, insta, gender, interest) {
 
     const randomSuit = suits[Math.floor(Math.random() * suits.length)];
     const randomValue = values[Math.floor(Math.random() * values.length)];
-    const matchCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const matchCode = (uid.substring(0, 2) + Math.random().toString(36).substring(2, 4)).toUpperCase();
 
     let isJoker = false;
     
@@ -162,6 +160,16 @@ export function processMatchResult(other) {
 
 // 📸 Gera um TEMPLATE de Story (Otimizado para não travar Safari de iPhones)
 export async function shareToInstagram() {
+      if (!window.html2canvas) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+    
     const btn = document.getElementById('shareBtn');
     if(!btn) return;
     

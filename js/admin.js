@@ -122,10 +122,13 @@ window.resetJoker = async () => {
 };
 
 window.triggerEndGame = async () => {
-    if (!confirm("🚨 ATENÇÃO: Isso vai encerrar o jogo e exibir as estatísticas finais no telão. Todo mundo vai ver. Tem certeza?")) return;
+    if (!confirm("🚨 Isso vai encerrar o jogo e exibir as estatísticas no telão. Tem certeza?")) return;
     try {
-        await setDoc(gameStateRef, { isGameOver: true, endedAt: new Date().toISOString() });
-        alert("🏁 Festa encerrada com sucesso! Olhe para o telão.");
+        await setDoc(gameStateRef, { 
+            isGameOver: true, 
+            endedAt: new Date().toISOString() 
+        });
+        alert("🏁 Festa encerrada! Verifique o telão.");
     } catch (error) {
         console.error("Erro ao encerrar:", error);
         alert("Erro ao comunicar com o telão.");

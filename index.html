@@ -6,24 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Última Carta</title>
     <meta name="description" content="A Última Carta - Encontre seu par na festa do Triplex e ganhe um shot duplo!">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            corePlugins: {
-                preflight: true, // Mantivemos true para não quebrar o seu design, mas o CDN já vai carregar melhor com o preconnect
-            }
-        }
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <!-- Preconnects -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Font Awesome — async, não bloqueia renderização -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </noscript>
+
+    <!-- CSS principal -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
@@ -54,8 +53,8 @@
     </div>
 
     <header class="text-center mb-6">
-        <img src="img/sagui_joker.png" alt="Logo Fatec Ferraz"
-            class="w-28 h-28 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+        <img src="img/sagui_joker.webp" alt="Logo" width="112" height="112"
+            class="w-28 h-28 mx-auto mb-4 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]" fetchpriority="high">
         <h1 class="text-5xl casino-title leading-tight">A última Carta</h1>
         <p class="text-[10px] tracking-[0.4em] text-gold mt-2 uppercase font-bold text-center">Sorte na carta, par na
             festa</p>
@@ -316,7 +315,7 @@
             </button>
         </div>
     </div>
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/app.js" defer></script>
 </body>
 
 </html>
