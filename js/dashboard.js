@@ -1,10 +1,12 @@
-import { auth, db, participantsCol, jokerRef } from "./firebase.js";
+import { auth, db, participantsCol, jokerRef, appId } from "./firebase.js";
 import { signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getDocs, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import {
+    getDocs, deleteDoc, doc, setDoc, onSnapshot, collection
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-/**
- * 1. EXPOSIÇÃO PARA O HTML
- */
+const matchesCol = collection(db, "matches");
+const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'game_state');
+
 window.checkPassword = (e) => {
     e.preventDefault();
     const pwd = document.getElementById('adminPassword').value;
@@ -13,7 +15,7 @@ window.checkPassword = (e) => {
         document.getElementById('loginOverlay').style.display = 'none';
         if (!window.isFirebaseLoaded) loginFirebase();
     } else {
-        alert("Senha incorreta! (Dica: royal2026)");
+        alert("Senha incorreta!");
         document.getElementById('adminPassword').value = '';
     }
 };
@@ -34,42 +36,45 @@ async function loginFirebase() {
 }
 
 function startTelao() {
-    onSnapshot(participantsCol, (snapshot) => {
-        const grid = document.getElementById('cardsGrid');
-        const total = document.getElementById('totalPlayers');
-        const jokerName = document.getElementById('jokerName');
-        const jokerPanel = document.getElementById('jokerStatusPanel');
-        const jokerIcon = document.getElementById('jokerIcon');
+    let allPlayersMap = new Map();
 
+    // 🔥 Marca o momento exato em que o telão foi aberto
+    const telaoStartTime = Date.now();
+
+    onSnapshot(participantsCol, (snapshot) => {
+        const total = document.getElementById('totalPlayers');
         if (total) total.innerText = snapshot.size;
 
-        let hasJoker = false;
-        let allPlayers = [];
-        let jokerPlayer = null; // Vamos guardar quem é o Coringa
-
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            allPlayers.push(d);
-
-            if (d.is_joker) {
-                hasJoker = true;
-                jokerPlayer = d; // Salva o Coringa para depois
-                if (jokerName) {
-                    jokerName.innerText = "👑 " + d.name.toUpperCase() + " É O CORINGA!";
-                    jokerName.classList.replace('text-white', 'text-purple-400');
-                }
-                if (jokerPanel) {
-                    jokerPanel.classList.add('border-purple-500', 'shadow-[0_0_40px_rgba(168,85,247,0.6)]');
-                    jokerPanel.classList.remove('border-gold/50');
-                }
-                if (jokerIcon) jokerIcon.className = "fas fa-mask text-4xl md:text-5xl text-purple-400 animate-bounce";
+        snapshot.docChanges().forEach(change => {
+            const d = change.doc.data();
+            if (change.type === 'removed') {
+                allPlayersMap.delete(change.doc.id);
+            } else {
+                allPlayersMap.set(change.doc.id, d);
             }
         });
 
-        if (!hasJoker) {
+        const jokerName = document.getElementById('jokerName');
+        const jokerPanel = document.getElementById('jokerStatusPanel');
+        const jokerIcon = document.getElementById('jokerIcon');
+        const jokerEntry = [...allPlayersMap.values()].find(p => p.is_joker);
+
+        if (jokerEntry) {
+            if (jokerName) {
+                jokerName.innerText = "👑 " + jokerEntry.name.toUpperCase() + " É O CORINGA!";
+                jokerName.classList.add('text-purple-400');
+                jokerName.classList.remove('text-white');
+            }
+            if (jokerPanel) {
+                jokerPanel.classList.add('border-purple-500', 'shadow-[0_0_40px_rgba(168,85,247,0.6)]');
+                jokerPanel.classList.remove('border-gold/50');
+            }
+            if (jokerIcon) jokerIcon.className = "fas fa-mask text-4xl md:text-5xl text-purple-400 animate-bounce";
+        } else {
             if (jokerName) {
                 jokerName.innerText = "Escondido no Baralho...";
-                jokerName.classList.replace('text-purple-400', 'text-white');
+                jokerName.classList.add('text-white');
+                jokerName.classList.remove('text-purple-400');
             }
             if (jokerPanel) {
                 jokerPanel.classList.remove('border-purple-500', 'shadow-[0_0_40px_rgba(168,85,247,0.6)]');
@@ -78,98 +83,160 @@ function startTelao() {
             if (jokerIcon) jokerIcon.className = "fas fa-crown text-4xl md:text-5xl text-gold";
         }
 
-        // Ordena todos por data
-        allPlayers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        let recentPlayers = allPlayers.slice(0, 24); // Pega as 24 mais recentes
+        let sorted = [...allPlayersMap.values()]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 24);
 
-        // 🔥 CORREÇÃO: O Coringa NUNCA pode sair da tela!
-        if (jokerPlayer) {
-            // Remove o coringa de onde ele estiver na lista atual (para não duplicar)
-            recentPlayers = recentPlayers.filter(p => p.uid !== jokerPlayer.uid);
-
-            // Força o Coringa a ser SEMPRE o 1º da fila no Telão
-            recentPlayers.unshift(jokerPlayer);
-
-            // Garante que o limite de 24 cartas se mantém
-            if (recentPlayers.length > 24) {
-                recentPlayers.pop();
-            }
+        if (jokerEntry) {
+            sorted = sorted.filter(p => p.uid !== jokerEntry.uid);
+            sorted.unshift(jokerEntry);
+            if (sorted.length > 24) sorted.pop();
         }
 
-        if (grid) {
-            grid.innerHTML = '';
+        renderGrid(document.getElementById('cardsGrid'), sorted);
+    });
 
-            if (recentPlayers.length === 0) {
-                grid.innerHTML = '<div class="w-full h-full flex flex-col items-center justify-center py-10 md:py-0"><i class="fas fa-layer-group text-4xl md:text-6xl text-gold/30 mb-4"></i><p class="text-gold/50 text-xl md:text-3xl uppercase tracking-widest animate-pulse text-center px-4">Aguardando o primeiro jogador...</p></div>';
-                return;
+    const dashboardStartTime = new Date().getTime();
+    onSnapshot(matchesCol, (snapshot) => {
+        const totalMatchesEl = document.getElementById('totalMatches');
+        if (totalMatchesEl) totalMatchesEl.innerText = snapshot.size;
+
+        snapshot.docChanges().forEach((change) => {
+            const matchData = change.doc.data();
+            const matchTime = new Date(matchData.timestamp).getTime();
+            if (matchTime > dashboardStartTime) {
+                showMatchAlert(matchData);
             }
+        });
+    });
 
-          // Substitua todo o bloco do forEach por este:
-            recentPlayers.forEach(d => {
-                const isJokerCard = d.is_joker;
-                
-                // Classes limpas para o CSS brilhar!
-                const cardClass = isJokerCard ? 'joker-card-front joker-glow' : ''; 
-                const textColor = isJokerCard ? '#ffffff' : d.color;
-                const valDisplay = isJokerCard ? 'J' : d.cardValue;
-                const symDisplay = isJokerCard ? '🎭' : d.suitSymbol;
-                const centerDisplay = isJokerCard ? '🎭' : d.suitSymbol;
+    // 🔥 CORRIGIDO: Só reage a encerramentos que aconteceram DEPOIS do telão abrir
+    onSnapshot(gameStateRef, async (snap) => {
+        if (!snap.exists()) return;
 
-                const firstName = d.name.split(' ')[0].toUpperCase();
-                const instaRaw = d.instagram || '';
-                const instaClean = instaRaw.replace('@', '');
-                const instaDisplay = instaClean ? `<span class="text-[9px] md:text-[10px] text-pink-400 mt-0.5 truncate w-full text-center tracking-wide font-medium"><i class="fab fa-instagram"></i> @${instaClean}</span>` : '';
+        const data = snap.data();
+        if (data.isGameOver !== true) return;
 
-                const cardHTML = `
-                    <div class="flex flex-col items-center animate-[popIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
-                        
-                        <div class="telao-card ${cardClass} relative overflow-hidden" style="color: ${textColor};">
-                            
-                            <div class="absolute top-1.5 left-2 flex flex-col items-center leading-none font-black">
-                                <span class="text-xl md:text-2xl">${valDisplay}</span>
-                                <span class="text-xs md:text-sm mt-0.5">${symDisplay}</span>
-                            </div>
-                            
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-[3rem] md:text-[4rem] drop-shadow-sm">${centerDisplay}</span>
-                            </div>
-                            
-                            <div class="absolute bottom-1.5 right-2 flex flex-col items-center leading-none font-black rotate-180">
-                                <span class="text-xl md:text-2xl">${valDisplay}</span>
-                                <span class="text-xs md:text-sm mt-0.5">${symDisplay}</span>
-                            </div>
+        const endedAt = new Date(data.endedAt).getTime();
+        if (endedAt < telaoStartTime) return; // Ignora estados antigos
 
-                        </div>
-                        
-                        <div class="mt-3 bg-[#111] w-[90px] md:w-[110px] px-2 py-2 rounded-lg border border-gold/40 flex flex-col items-center shadow-lg">
-                            <span class="text-[10px] md:text-xs text-white font-black truncate w-full text-center tracking-wider">${firstName}</span>
-                            ${instaDisplay}
-                            <span class="text-[8px] md:text-[9px] text-gold font-mono font-bold tracking-widest mt-1 uppercase">${d.matchCode}</span>
-                        </div>
-                        
-                    </div>
-                `;
-                
-                // Adiciona a carta na tela!
-                grid.innerHTML += cardHTML;
-            });
+        const endScreen = document.getElementById('endGameScreen');
+        const endMatches = document.getElementById('endTotalMatches');
+        const endTopSuit = document.getElementById('endTopSuit');
+        const endJoker = document.getElementById('endJokerName');
+
+        const playersSnap = await getDocs(participantsCol);
+
+        let suitsCount = { 'Copas': 0, 'Espadas': 0, 'Ouros': 0, 'Trevos': 0 };
+        let jokerName = "Ninguém encontrou";
+
+        playersSnap.forEach(d => {
+            const pd = d.data();
+            if (pd.is_joker) {
+                jokerName = pd.name.toUpperCase();
+            } else if (pd.suitName) {
+                suitsCount[pd.suitName] = (suitsCount[pd.suitName] || 0) + 1;
+            }
+        });
+
+        let topSuit = 'Copas';
+        let maxCount = 0;
+        const suitSymbols = { 'Copas': '♥️', 'Espadas': '♠', 'Ouros': '♦', 'Trevos': '♣' };
+        const suitColors = { 'Copas': 'text-red-500', 'Espadas': 'text-gray-300', 'Ouros': 'text-red-500', 'Trevos': 'text-gray-300' };
+
+        for (const [suit, count] of Object.entries(suitsCount)) {
+            if (count > maxCount) { maxCount = count; topSuit = suit; }
         }
 
-        const feed = document.getElementById('liveFeed');
-        if (recentPlayers.length > 0 && feed) {
-            const names = recentPlayers.slice(0, 8).map(p => p.name.split(' ')[0]).join(', ');
-            feed.innerText = `✦ ${names} entraram no jogo! ✦ Ache seu par na pista ✦ Escaneie o QR Code na tela ✦ Cuidado: O Coringa não tem regras! ✦`;
+        const totalMatchesStr = document.getElementById('totalMatches')?.innerText || '0';
+
+        if (endMatches) endMatches.innerText = totalMatchesStr;
+        if (endJoker) endJoker.innerText = jokerName;
+        if (endTopSuit) endTopSuit.innerHTML = `<span class="${suitColors[topSuit]}">${suitSymbols[topSuit]}</span> ${topSuit}`;
+
+        if (endScreen) {
+            endScreen.classList.remove('hidden');
+            setTimeout(() => {
+                endScreen.classList.remove('opacity-0');
+                endScreen.classList.add('opacity-100');
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 300, spread: 100, origin: { y: 0.3 }, zIndex: 1000 });
+                }
+            }, 100);
         }
     });
 }
 
-// ==========================================
-// 🔥 FERRAMENTAS DE TESTE (Simulação e Limpeza)
-// ==========================================
+function renderGrid(grid, players) {
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (players.length === 0) {
+        grid.innerHTML = `<div class="w-full h-full flex flex-col items-center justify-center py-10">
+            <i class="fas fa-layer-group text-4xl text-gold/30 mb-4"></i>
+            <p class="text-gold/50 text-xl uppercase tracking-widest animate-pulse">Aguardando jogadores...</p>
+        </div>`;
+        return;
+    }
+
+    players.forEach(d => {
+        const isJoker = d.is_joker;
+        const cardClass = isJoker ? 'joker-card-front joker-glow' : '';
+        const firstName = d.name.split(' ')[0].toUpperCase();
+        const instaClean = (d.instagram || '').replace('@', '');
+
+        grid.innerHTML += `
+            <div class="flex flex-col items-center animate-[popIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                <div class="telao-card ${cardClass} relative overflow-hidden" style="color: ${isJoker ? '#ffffff' : d.color};">
+                    <div class="absolute top-1.5 left-2 flex flex-col items-center leading-none font-black">
+                        <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
+                        <span class="text-xs md:text-sm mt-0.5">${isJoker ? '🎭' : d.suitSymbol}</span>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-[3rem] md:text-[4rem] drop-shadow-sm">${isJoker ? '🎭' : d.suitSymbol}</span>
+                    </div>
+                    <div class="absolute bottom-1.5 right-2 flex flex-col items-center leading-none font-black rotate-180">
+                        <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
+                        <span class="text-xs md:text-sm mt-0.5">${isJoker ? '🎭' : d.suitSymbol}</span>
+                    </div>
+                </div>
+                <div class="mt-3 bg-[#111] w-[90px] md:w-[110px] px-2 py-2 rounded-lg border border-gold/40 flex flex-col items-center shadow-lg">
+                    <span class="text-[10px] md:text-xs text-white font-black truncate w-full text-center tracking-wider">${firstName}</span>
+                    ${instaClean ? `<span class="text-[9px] md:text-[10px] text-pink-400 mt-0.5 truncate w-full text-center tracking-wide font-medium"><i class="fab fa-instagram"></i> @${instaClean}</span>` : ''}
+                    <span class="text-[8px] md:text-[9px] text-gold font-mono font-bold tracking-widest mt-1 uppercase">${d.matchCode}</span>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function showMatchAlert(data) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = "fixed top-10 left-1/2 -translate-x-1/2 z-[500] bg-gradient-to-r from-pink-600 to-purple-600 text-white px-10 py-6 rounded-3xl shadow-[0_0_50px_rgba(219,39,119,0.8)] border-2 border-white/30 text-center flex flex-col items-center";
+    alertDiv.style.animation = "popIn 0.5s ease-out";
+
+    const p1Name = data.p1_name ? data.p1_name.split(' ')[0] : "Alguém";
+    const p2Name = data.p2_name ? data.p2_name.split(' ')[0] : "Alguém";
+
+    alertDiv.innerHTML = `
+        <span class="text-5xl mb-2">🥂</span>
+        <h3 class="text-2xl font-black uppercase italic tracking-tighter">NOVO MATCH NA PISTA!</h3>
+        <p class="text-xl font-bold mt-1">${p1Name} ❤️ ${p2Name}</p>
+        <p class="text-[10px] mt-2 tracking-[0.3em] uppercase opacity-90 font-black">SHOT DUPLO LIBERADO!</p>
+    `;
+
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+        alertDiv.style.opacity = '0';
+        alertDiv.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => alertDiv.remove(), 500);
+    }, 6000);
+}
 
 window.simulateCrowd = async () => {
-    if (!auth.currentUser) return alert("Inicie sessão primeiro (mesmo que anônima).");
-    if (!confirm("Isto vai criar 15 jogadores falsos para veres como o Telão enche. Continuar?")) return;
+    if (!auth.currentUser) return alert("Inicie sessão primeiro.");
+    if (!confirm("Isto vai injetar 15 jogadores para teste. Continuar?")) return;
 
     const fakeNames = ["Carlos", "Beatriz", "Miguel", "Ana", "Lucas", "Sofia", "Tiago", "Maria", "Pedro", "Inês", "Diogo", "Rita", "Hugo", "Catarina", "Tomás"];
     const suits = [
@@ -186,40 +253,27 @@ window.simulateCrowd = async () => {
         const randomValue = values[Math.floor(Math.random() * values.length)];
         const matchCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-        const participantData = {
-            uid: uid,
-            name: fakeNames[i],
+        await setDoc(doc(participantsCol, uid), {
+            uid, name: fakeNames[i],
             instagram: `@${fakeNames[i].toLowerCase()}_ofc`,
-            gender: 'nb',
-            interest: 'all',
-            suitName: randomSuit.name,
-            suitSymbol: randomSuit.symbol,
-            cardValue: randomValue,
-            color: randomSuit.color,
-            is_joker: false,
-            matchCode: matchCode,
+            gender: 'nb', interest: 'all',
+            suitName: randomSuit.name, suitSymbol: randomSuit.symbol,
+            cardValue: randomValue, color: randomSuit.color,
+            is_joker: false, matchCode,
             suggestion: "Teste de Telão",
             createdAt: new Date().toISOString()
-        };
-
-        await setDoc(doc(participantsCol, uid), participantData);
-        await new Promise(r => setTimeout(r, 800));
+        });
+        await new Promise(r => setTimeout(r, 600));
     }
 };
 
 window.wipeTable = async () => {
-    if (!confirm("CUIDADO: Isto vai apagar TODOS os jogadores da base de dados e o Coringa. Usar apenas antes de começar a festa! Continuar?")) return;
-    if (!confirm("Atenção: Apagar a mesa? Não tem volta atrás!")) return;
-
+    if (!confirm("CUIDADO: Isto vai apagar TODOS os jogadores. Continuar?")) return;
     try {
         await deleteDoc(jokerRef);
+        await deleteDoc(gameStateRef); // 🔥 Limpa o estado de fim de jogo também
         const snap = await getDocs(participantsCol);
-        const promises = [];
-        snap.forEach(d => {
-            promises.push(deleteDoc(doc(participantsCol, d.id)));
-        });
-        await Promise.all(promises);
-
+        await Promise.all(snap.docs.map(d => deleteDoc(doc(participantsCol, d.id))));
         alert("Mesa limpa! Pode começar a festa.");
     } catch (err) {
         console.error(err);
@@ -227,10 +281,16 @@ window.wipeTable = async () => {
     }
 };
 
+window.closeEndGame = () => {
+    const endScreen = document.getElementById('endGameScreen');
+    endScreen.classList.remove('opacity-100');
+    endScreen.classList.add('opacity-0');
+    setTimeout(() => endScreen.classList.add('hidden'), 1000);
+};
+
 window.onload = () => {
-    const urlDoApp = 'https://sua-festa-aqui.com';
     const qrImg = document.getElementById('mainQrCode');
-    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(urlDoApp)}`;
+    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(window.location.origin)}`;
 
     if (sessionStorage.getItem('telao_auth_party') === 'true') {
         loginFirebase();

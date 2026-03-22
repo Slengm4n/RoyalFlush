@@ -1,77 +1,105 @@
-    @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Poppins:wght@300;400;600;800&display=swap');
+/* 1. Agrupamento de Fontes e Variáveis */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=UnifrakturMaguntia&display=swap');
 
-        :root {
-            --gold: #d4af37;
-            --wine-dark: #2a0505;
-        }
+:root {
+    --gold: #d4af37;
+    --gold-glow: rgba(212, 175, 55, 0.3);
+    --wine-dark: #2a0505;
+    --bg-dark: #0f172a;
+    --glass: rgba(255, 255, 255, 0.03);
+    --transition: all 0.3s ease;
+}
 
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top, #1e1b4b 0%, #000000 100%);
-            min-height: 100vh;
-        }
+/* 2. Reset e Melhorias Globais */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Previne o zoom automático no iPhone ao clicar num campo de texto */
-        input[type="text"], input[type="password"] {
-            font-size: 16px !important;
-        }
+body {
+    background: radial-gradient(circle at top, #1e1b4b 0%, #000000 100%);
+    background-color: var(--bg-dark);
+    color: #f8fafc;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
+/* 3. Inputs: Otimização para Mobile (iOS fix) */
+input[type="text"], 
+input[type="password"], 
+select, 
+textarea {
+    font-size: 16px !important; /* Mantém o fix do zoom */
+    appearance: none; 
+}
 
-        .casino-title {
-            font-family: 'UnifrakturMaguntia', cursive;
-            color: var(--gold);
-        }
+/* 4. Glassmorphism Refinado */
+.glass-panel {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Suporte Safari */
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    border-radius: 16px;
+}
 
-        /* Mini Cartas para a Mesa */
-        .mini-card {
-            width: 70px;
-            height: 100px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid var(--gold);
-            background: #fff;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
+.casino-title {
+    font-family: 'UnifrakturMaguntia', cursive;
+    color: var(--gold);
+    text-shadow: 0 0 15px var(--gold-glow);
+    letter-spacing: 1px;
+}
 
-        .mini-card::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0.1;
-            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
-            border-radius: 6px;
-        }
+/* 5. Cartas: Uso de Flex e Aspect-Ratio */
+.mini-card {
+    width: 70px;
+    aspect-ratio: 7 / 10; /* Mantém a proporção automaticamente */
+    border-radius: 8px;
+    display: grid; /* Grid centraliza melhor o conteúdo da carta */
+    place-items: center;
+    border: 2px solid var(--gold);
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    transition: var(--transition);
+    user-select: none;
+}
 
-        .mini-card.joker {
-            background: linear-gradient(135deg, #1a1a1a, #3b0764);
-            border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-        }
+.mini-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
 
-        /* Scrollbar customizada para a mesa */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
+.mini-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+    pointer-events: none; /* Não interfere no clique */
+}
 
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
+/* Variante Joker */
+.mini-card.joker {
+    background: linear-gradient(135deg, #1a1a1a, #3b0764);
+    border-color: #a855f7;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--gold);
-            border-radius: 4px;
-        }
+/* 6. Scrollbar Estilizada (Webkit) */
+.mesa-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.mesa-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mesa-container::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}
