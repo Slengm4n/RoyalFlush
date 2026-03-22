@@ -1,36 +1,48 @@
- @keyframes marquee {
-     0% {
-         transform: translateX(100vw);
-     }
+/* 1. Marquee Suave e Performance-First */
+@keyframes marquee {
+    0% {
+        /* Usar translate3d força a aceleração de hardware (GPU) */
+        transform: translate3d(100%, 0, 0);
+    }
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
 
-     100% {
-         transform: translateX(-100%);
-     }
- }
+/* 2. PopIn com Curva de Elasticidade (Spring-like) */
+@keyframes popIn {
+    0% {
+        transform: scale(0.5) translateY(30px) rotate(-10deg);
+        opacity: 0;
+    }
+    70% {
+        /* Efeito de "overshoot" para parecer mais orgânico */
+        transform: scale(1.05) translateY(-5px) rotate(2deg);
+    }
+    100% {
+        transform: scale(1) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+}
 
- @keyframes popIn {
-     0% {
-         transform: scale(0) translateY(50px) rotate(-15deg);
-         opacity: 0;
-     }
+/* 3. JokerPulse: Otimização de Repaint */
+@keyframes jokerPulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+    }
+    50% {
+        transform: scale(1.02); /* Leve pulso no tamanho ajuda o efeito */
+        filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.7));
+    }
+}
 
-     100% {
-         transform: scale(1) translateY(0) rotate(0deg);
-         opacity: 1;
-     }
- }
-
- @keyframes jokerPulse {
-     0% {
-         box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-     }
-
-     100% {
-         box-shadow: 0 0 50px rgba(168, 85, 247, 0.8);
-     }
- }
-
- @keyframes qrPulse {
-            0% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
-            100% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.6); }
-        }
+/* 4. QRPulse: Suavidade Constante */
+@keyframes qrPulse {
+    from { 
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), inset 0 0 10px rgba(212, 175, 55, 0.1); 
+    }
+    to { 
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.2); 
+    }
+}
