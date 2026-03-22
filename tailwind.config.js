@@ -1,8 +1,15 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./*.html"], // Ajuste para o caminho dos seus arquivos
+  content: [
+    "./*.html",
+    "./app/**/*.html",
+    "./js/**/*.js"
+  ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gold: '#d4af37'
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 }
