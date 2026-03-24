@@ -25,21 +25,21 @@ export async function processDraw(currentUser, name, insta, gender, interest) {
     const matchCode = (uid.substring(0, 2) + Math.random().toString(36).substring(2, 4)).toUpperCase();
 
     let isJoker = false;
-    
+
     // 🔥 OTIMIZAÇÃO: Transação mais limpa e direta. Ocorrerá menos "retry" no Firebase.
     try {
         await runTransaction(db, async (transaction) => {
             const jokerSnap = await transaction.get(jokerRef);
             // Só tenta ser coringa se ele NÃO existir ou se o 'taken' for falso
             if (!jokerSnap.exists() || jokerSnap.data()?.taken !== true) {
-                if (Math.random() < 0.05) { 
+                if (Math.random() < 0.05) {
                     isJoker = true;
                     transaction.set(jokerRef, { taken: true, winner: uid, name: name });
                 }
             }
         });
-    } catch (e) { 
-        console.error("Erro na transação do Coringa:", e); 
+    } catch (e) {
+        console.error("Erro na transação do Coringa:", e);
         // Se a transação falhar por gargalo de rede, ele continua como carta normal sem travar a festa
     }
 
@@ -49,13 +49,13 @@ export async function processDraw(currentUser, name, insta, gender, interest) {
 
     const participantData = {
         uid, name, instagram: insta, gender, interest,
-        suitName: isJoker ? 'Coringa' : randomSuit.name,
-        suitSymbol: isJoker ? '🎭' : randomSuit.symbol,
-        cardValue: isJoker ? 'J' : randomValue,
-        color: isJoker ? '#a855f7' : randomSuit.color,
+        suitName: isJoker ? 'Coringa Real' : randomSuit.name,
+        suitSymbol: isJoker ? '✦' : randomSuit.symbol, // Um símbolo mais minimalista que a máscara
+        cardValue: isJoker ? 'K' : randomValue,
+        color: isJoker ? '#D4AF37' : randomSuit.color, // Dourado Metálico
         is_joker: isJoker,
         matchCode,
-        suggestion: isJoker ? "Tu és o Caos! Encontra quem quiseres para o teu Match Perfeito." :
+        suggestion: isJoker ? "O destino está nas tuas mãos. Escolhe o teu próprio par." :
             `Encontra ${targetText} com o naipe de ${randomSuit.name}!`,
         createdAt: new Date().toISOString()
     };
@@ -65,10 +65,10 @@ export async function processDraw(currentUser, name, insta, gender, interest) {
         await setDoc(getParticipantDoc(uid), participantData);
         localStorage.setItem('festa_uid_final_scale', uid);
         showMyCard(participantData);
-    } catch(err) {
+    } catch (err) {
         console.error("Erro ao salvar card:", err);
         // Exibe toast usando a função global injetada pelo app.js
-        if(window.showToast) window.showToast("Erro", "Sinal ruim. Tente de novo.", "error");
+        if (window.showToast) window.showToast("Erro", "Sinal ruim. Tente de novo.", "error");
     }
 }
 
@@ -79,8 +79,8 @@ export function showMyCard(data) {
     if (el('shuffleSection')) el('shuffleSection').classList.add('hidden-section');
     if (el('revealSection')) el('revealSection').classList.remove('hidden-section');
 
-    const setText = (id, text) => { if(el(id)) el(id).innerText = text; };
-    
+    const setText = (id, text) => { if (el(id)) el(id).innerText = text; };
+
     setText('topValue', data.cardValue);
     setText('topSymbol', data.suitSymbol);
     setText('botValue', data.cardValue);
@@ -94,16 +94,25 @@ export function showMyCard(data) {
     const cardContent = el('cardContent');
 
     if (cardContent) {
-       if (data.is_joker) {
-            if (mainValue) mainValue.innerText = ''; 
-            if (mainSuit) {
-                mainSuit.innerText = '🤡'; 
-                mainSuit.className = 'text-[8rem] mt-2 drop-shadow-2xl animate-pulse';
+        if (data.is_joker) {
+            if (mainValue) {
+                mainValue.innerText = 'J';
+                mainSuit.className = 'text-[8rem] font-serif italic font-light tracking-tighter drop-shadow-[0_0_15px_rgba(212,175,55,0.8)]';
             }
-            
-            cardContent.classList.remove('joker-card-front'); 
-            cardContent.classList.add('joker-glow');
-            
+            if (mainSuit) {
+                mainSuit.innerText = '✦';
+                mainSuit.className = 'text-5xl mt-[-20px] opacity-80 animate-pulse';
+            }
+
+            cardContent.classList.remove('joker-card-front');
+            cardContent.classList.add('joker-glow-gold');
+
+            cardContent.style.background = '#ffffff';
+            cardContent.style.color = '#D4AF37';;
+            cardContent.style.border = '2px solid #D4AF37';
+
+            cardContent.style.boxShadow = '0 0 25px rgba(212, 175, 55, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.2)';
+
             if (el('jokerMessage')) el('jokerMessage').classList.remove('hidden');
             if (el('jokerPrize')) el('jokerPrize').classList.remove('hidden');
         } else {
@@ -116,7 +125,7 @@ export function showMyCard(data) {
                 mainSuit.className = 'text-7xl mt-2 drop-shadow-md opacity-90';
             }
             cardContent.classList.remove('joker-card-front', 'joker-glow');
-            
+
             if (el('jokerMessage')) el('jokerMessage').classList.add('hidden');
             if (el('jokerPrize')) el('jokerPrize').classList.add('hidden');
         }
@@ -131,7 +140,7 @@ export function showMyCard(data) {
 export function processMatchResult(other) {
     const matchMsg = el('matchMsg');
     const voucherDiv = el('prizeVoucher');
-    
+
     // O Cooldown original foi movido inteiramente para o app.js na nova versão.
     // Manteremos apenas a lógica visual aqui.
 
@@ -147,12 +156,12 @@ export function processMatchResult(other) {
 
     if (el('qrCodeImg')) el('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${prizeId}`;
     if (el('voucherCode')) el('voucherCode').innerText = prizeId;
-    
+
     if (voucherDiv) {
         voucherDiv.classList.remove('hidden');
         voucherDiv.style.display = 'block';
     }
-    
+
     if (typeof confetti === 'function') confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
 
     if (el('matchModal')) el('matchModal').classList.remove('hidden');
@@ -160,7 +169,7 @@ export function processMatchResult(other) {
 
 // 📸 Gera um TEMPLATE de Story (Otimizado para não travar Safari de iPhones)
 export async function shareToInstagram() {
-      if (!window.html2canvas) {
+    if (!window.html2canvas) {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -169,10 +178,10 @@ export async function shareToInstagram() {
             document.head.appendChild(script);
         });
     }
-    
+
     const btn = document.getElementById('shareBtn');
-    if(!btn) return;
-    
+    if (!btn) return;
+
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i> Gerando Story...';
     btn.disabled = true;
@@ -195,7 +204,7 @@ export async function shareToInstagram() {
         const isJ = myData.is_joker;
         const valDisplay = isJ ? 'J' : myData.cardValue;
         const symDisplay = isJ ? '🎭' : myData.suitSymbol;
-        const isRed = ['red','#dc2626','#ef4444','#b91c1c'].includes(myData.color);
+        const isRed = ['red', '#dc2626', '#ef4444', '#b91c1c'].includes(myData.color);
         const suitColor = isJ ? '#c084fc' : (isRed ? '#ef4444' : '#f1f5f9');
         const glowColor = isJ ? 'rgba(192,132,252,0.5)' : (isRed ? 'rgba(239,68,68,0.4)' : 'rgba(212,175,55,0.4)');
 
@@ -210,7 +219,7 @@ export async function shareToInstagram() {
 
         const shareContainer = document.createElement('div');
         shareContainer.id = 'storyTemplateContainer';
-        
+
         // Oculta fora da tela sem usar 'display: none' para o canvas poder ler
         shareContainer.style.cssText = `
             position:absolute;top:-9999px;left:0;
@@ -334,10 +343,10 @@ export async function shareToInstagram() {
 
         // 🔥 OTIMIZAÇÃO: windowWidth e windowHeight limitam a renderização virtual, acelerando o processo.
         const canvas = await html2canvas(shareContainer, {
-            scale: 1, 
-            useCORS: true, 
+            scale: 1,
+            useCORS: true,
             allowTaint: true,
-            logging: false, 
+            logging: false,
             backgroundColor: '#08050a',
             windowWidth: 1080,
             windowHeight: 1920
@@ -359,7 +368,7 @@ export async function shareToInstagram() {
                 const a = document.createElement('a');
                 a.href = url; a.download = 'ultima-carta-story.jpg';
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                if(window.showToast) window.showToast("Sucesso!", "Story salvo. Posta no insta e marca a gente!", "success");
+                if (window.showToast) window.showToast("Sucesso!", "Story salvo. Posta no insta e marca a gente!", "success");
             }
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -367,7 +376,7 @@ export async function shareToInstagram() {
 
     } catch (err) {
         console.error("Erro ao gerar Story:", err);
-        if(window.showToast) window.showToast("Erro", "Não deu pra gerar a foto. Tire um print da tela!", "error");
+        if (window.showToast) window.showToast("Erro", "Não deu pra gerar a foto. Tire um print da tela!", "error");
         btn.innerHTML = originalText;
         btn.disabled = false;
         const temp = document.getElementById('storyTemplateContainer');

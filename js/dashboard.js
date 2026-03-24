@@ -61,7 +61,7 @@ function startTelao() {
 
         if (jokerEntry) {
             if (jokerName) {
-                jokerName.innerText = "👑 " + jokerEntry.name.toUpperCase() + " É O CORINGA!";
+                jokerName.innerText = "👑" + jokerEntry.name.toUpperCase() + " É O CORINGA!";
                 jokerName.classList.add('text-purple-400');
                 jokerName.classList.remove('text-white');
             }
@@ -69,7 +69,7 @@ function startTelao() {
                 jokerPanel.classList.add('border-purple-500', 'shadow-[0_0_40px_rgba(168,85,247,0.6)]');
                 jokerPanel.classList.remove('border-gold/50');
             }
-            if (jokerIcon) jokerIcon.className = "fas fa-mask text-4xl md:text-5xl text-purple-400 animate-bounce";
+            if (jokerIcon) jokerIcon.className = "fa-solid fa-masks-theater </i> text-4xl md:text-5xl text-purple-400 animate-bounce";
         } else {
             if (jokerName) {
                 jokerName.innerText = "Escondido no Baralho...";
@@ -179,35 +179,57 @@ function renderGrid(grid, players) {
         return;
     }
 
-    players.forEach(d => {
-        const isJoker = d.is_joker;
-        const cardClass = isJoker ? 'joker-card-front joker-glow' : '';
-        const firstName = d.name.split(' ')[0].toUpperCase();
-        const instaClean = (d.instagram || '').replace('@', '');
+  players.forEach(d => {
+    const isJoker = d.is_joker;
+    
+    // 🔥 MODIFICAÇÃO APENAS PARA O CORINGA:
+    // Se for coringa: Fundo Branco + Borda Dourada + Glow. 
+    // Se não: Mantém o padrão original (vazio ou sua classe padrão).
+    const cardClass = isJoker 
+        ? 'bg-white shadow-[0_0_25px_rgba(212,175,55,0.6)] border-2 border-[#D4AF37]' 
+        : 'bg-white border border-gray-200'; // Ajuste aqui para o fundo padrão que você usava
 
-        grid.innerHTML += `
-            <div class="flex flex-col items-center animate-[popIn_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
-                <div class="telao-card ${cardClass} relative overflow-hidden" style="color: ${isJoker ? '#ffffff' : d.color};">
-                    <div class="absolute top-1.5 left-2 flex flex-col items-center leading-none font-black">
-                        <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
-                        <span class="text-xs md:text-sm mt-0.5">${isJoker ? '🎭' : d.suitSymbol}</span>
-                    </div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-[3rem] md:text-[4rem] drop-shadow-sm">${isJoker ? '🎭' : d.suitSymbol}</span>
-                    </div>
-                    <div class="absolute bottom-1.5 right-2 flex flex-col items-center leading-none font-black rotate-180">
-                        <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
-                        <span class="text-xs md:text-sm mt-0.5">${isJoker ? '🎭' : d.suitSymbol}</span>
-                    </div>
+    const firstName = d.name.split(' ')[0].toUpperCase();
+    const instaClean = (d.instagram || '').replace('@', '');
+    const textColor = isJoker ? '#D4AF37' : d.color;
+
+    grid.innerHTML += `
+        <div class="flex flex-col items-center animate-[popIn_0.5s_forwards] mb-4">
+            <div class="telao-card ${cardClass} relative overflow-hidden rounded-xl shadow-lg" 
+                 style="color: ${textColor}; width: 100px; height: 140px;">
+                
+                <div class="absolute top-1.5 left-2 flex flex-col items-center leading-none font-black">
+                    <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
+                    <span class="text-xs md:text-sm mt-0.5">${isJoker ? '✦' : d.suitSymbol}</span>
                 </div>
-                <div class="mt-3 bg-[#111] w-[90px] md:w-[110px] px-2 py-2 rounded-lg border border-gold/40 flex flex-col items-center shadow-lg">
-                    <span class="text-[10px] md:text-xs text-white font-black truncate w-full text-center tracking-wider">${firstName}</span>
-                    ${instaClean ? `<span class="text-[9px] md:text-[10px] text-pink-400 mt-0.5 truncate w-full text-center tracking-wide font-medium"><i class="fab fa-instagram"></i> @${instaClean}</span>` : ''}
-                    <span class="text-[8px] md:text-[9px] text-gold font-mono font-bold tracking-widest mt-1 uppercase">${d.matchCode}</span>
+
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[3rem] md:text-[3rem] drop-shadow-sm">${isJoker ? '✦' : d.suitSymbol}</span>
                 </div>
+
+                <div class="absolute bottom-1.5 right-2 flex flex-col items-center leading-none font-black rotate-180">
+                    <span class="text-xl md:text-2xl">${isJoker ? 'J' : d.cardValue}</span>
+                    <span class="text-xs md:text-sm mt-0.5">${isJoker ? '✦' : d.suitSymbol}</span>
+                </div>
+                
+                ${isJoker ? `<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent animate-[shine_3s_infinite]"></div>` : ''}
             </div>
-        `;
-    });
+
+            <div class="mt-3 w-[115px] flex flex-col items-center">
+                <span class="text-[10px] md:text-xs ${isJoker ? 'text-[#D4AF37] font-black' : 'text-white'} truncate w-full text-center uppercase">
+                    ${firstName}
+                </span>
+                
+                ${instaClean ? `
+                <div class="mt-1 bg-pink-500/10 border border-pink-500/20 px-2 py-0.5 rounded-full">
+                    <span class="text-[12px] text-pink-400 font-bold block truncate">
+                        <i class="fab fa-instagram text-[9px]"></i> ${instaClean}
+                    </span>
+                </div>` : ''}
+            </div>
+        </div>
+    `;
+});
 }
 
 function showMatchAlert(data) {
