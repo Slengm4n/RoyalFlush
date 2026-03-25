@@ -167,219 +167,23 @@ export function processMatchResult(other) {
     if (el('matchModal')) el('matchModal').classList.remove('hidden');
 }
 
-// 📸 Gera um TEMPLATE de Story (Otimizado para não travar Safari de iPhones)
-export async function shareToInstagram() {
-    if (!window.html2canvas) {
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
+export function shareToInstagram() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
 
-    const btn = document.getElementById('shareBtn');
-    if (!btn) return;
+    setTimeout(() => {
+        if (window.showToast) {
+            window.showToast(
+                "📸 Tira um print!",
+                "Posta no Insta e marca @atletica_sagui",
+                "success"
+            );
+        }
 
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i> Gerando Story...';
-    btn.disabled = true;
+        // Sai do fullscreen após 3s e volta ao normal
+        setTimeout(() => {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }, 10000);
 
-    try {
-        const logoBase64 = await new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                const c = document.createElement('canvas');
-                c.width = 130; // Resize agressivo na fonte em vez de desenhar tamanho natural
-                c.height = 130;
-                c.getContext('2d').drawImage(img, 0, 0, 130, 130);
-                resolve(c.toDataURL('image/jpeg', 0.8)); // Troca PNG para JPEG rápido
-            };
-            img.onerror = () => resolve(null);
-            img.src = 'img/sagui_joker.png';
-        });
-
-        const isJ = myData.is_joker;
-        const valDisplay = isJ ? 'J' : myData.cardValue;
-        const symDisplay = isJ ? '🎭' : myData.suitSymbol;
-        const isRed = ['red', '#dc2626', '#ef4444', '#b91c1c'].includes(myData.color);
-        const suitColor = isJ ? '#c084fc' : (isRed ? '#ef4444' : '#f1f5f9');
-        const glowColor = isJ ? 'rgba(192,132,252,0.5)' : (isRed ? 'rgba(239,68,68,0.4)' : 'rgba(212,175,55,0.4)');
-
-        const centerHTML = isJ
-            ? `<div style="font-size:280px;line-height:1;filter:drop-shadow(0 0 20px ${glowColor});">🎭</div>`
-            : `<div style="font-size:310px;font-weight:900;line-height:0.85;color:${suitColor};font-family:'Georgia',serif;filter:drop-shadow(0 0 20px ${glowColor});">${myData.cardValue}</div>
-               <div style="font-size:135px;color:${suitColor};font-family:Arial,sans-serif;filter:drop-shadow(0 0 15px ${glowColor});margin-top:10px;">${myData.suitSymbol}</div>`;
-
-        const logoInner = logoBase64
-            ? `<img src="${logoBase64}" style="width:130px;height:130px;object-fit:cover;border-radius:50%;">`
-            : `<div style="font-size:64px;line-height:1;">🦁</div>`;
-
-        const shareContainer = document.createElement('div');
-        shareContainer.id = 'storyTemplateContainer';
-
-        // Oculta fora da tela sem usar 'display: none' para o canvas poder ler
-        shareContainer.style.cssText = `
-            position:absolute;top:-9999px;left:0;
-            width:1080px;height:1920px;
-            background:#08050a;
-            display:grid;
-            grid-template-rows:660px 870px 390px;
-            box-sizing:border-box;
-            font-family:'Georgia','Times New Roman',serif;
-            z-index:-99;overflow:hidden;
-        `;
-
-        // Mantive o HTML original, apenas reduzi o blur das sombras na tag de background (text-shadow e box-shadow) 
-        // porque blur altíssimo é o maior vilão do html2canvas no mobile.
-        shareContainer.innerHTML = `
-            <div style="position:absolute;inset:0;pointer-events:none;z-index:1;
-                background:
-                    radial-gradient(ellipse 90% 55% at 50% 42%, rgba(80,20,120,0.15) 0%, transparent 70%),
-                    radial-gradient(ellipse 100% 35% at 50% 100%, rgba(0,0,0,0.98) 0%, transparent 60%);
-            "></div>
-
-            <div style="position:absolute;inset:28px;pointer-events:none;z-index:3;
-                border:1px solid rgba(212,175,55,0.18);border-radius:20px;"></div>
-            <div style="position:absolute;inset:40px;pointer-events:none;z-index:3;
-                border:1px solid rgba(212,175,55,0.06);border-radius:14px;"></div>
-
-            <div style="position:relative;z-index:10;
-                height:660px;
-                display:flex;flex-direction:column;align-items:center;justify-content:center;
-                padding:0 80px;box-sizing:border-box;text-align:center;gap:0;">
-
-                <div style="
-                    width:130px;height:130px;border-radius:50%;
-                    border:2px solid rgba(212,175,55,0.55);
-                    background:rgba(212,175,55,0.06);
-                    overflow:hidden;
-                    display:flex;align-items:center;justify-content:center;
-                    margin-bottom:28px;
-                    flex-shrink:0;">
-                    ${logoInner}
-                </div>
-
-                <p style="margin:0 0 12px;font-size:22px;letter-spacing:12px;
-                    color:rgba(212,175,55,0.6);text-transform:uppercase;
-                    font-family:'Georgia',serif;flex-shrink:0;">Você recebeu</p>
-
-                <h1 style="margin:0;line-height:0.88;font-size:128px;font-weight:900;
-                    font-family:'Georgia','Times New Roman',serif;letter-spacing:-3px;
-                    color:#f5f0e8;
-                    text-shadow:0 4px 16px rgba(0,0,0,0.9);
-                    flex-shrink:0;">
-                    A ÚLTIMA<br>CARTA
-                </h1>
-            </div>
-
-            <div style="position:relative;z-index:10;
-                height:870px;
-                display:flex;align-items:center;justify-content:center;">
-
-                <div style="
-                    width:600px;height:840px;
-                    background:linear-gradient(155deg,#1e1820 0%,#130f18 45%,#0c0a0e 100%);
-                    border-radius:44px;
-                    border:1px solid rgba(212,175,55,0.28);
-                    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-                    display:flex;flex-direction:column;
-                    align-items:center;justify-content:center;
-                    overflow:hidden;position:relative;">
-
-                    <div style="position:absolute;top:32px;left:32px;text-align:center;line-height:1.1;z-index:10;">
-                        <div style="font-size:86px;font-weight:900;color:${suitColor};
-                            font-family:Georgia,serif;text-shadow:0 0 10px ${glowColor};">${valDisplay}</div>
-                        <div style="font-size:62px;color:${suitColor};
-                            text-shadow:0 0 10px ${glowColor};margin-top:4px;">${symDisplay}</div>
-                    </div>
-
-                    <div style="position:absolute;bottom:32px;right:32px;
-                        text-align:center;line-height:1.1;z-index:10;transform:rotate(180deg);">
-                        <div style="font-size:86px;font-weight:900;color:${suitColor};
-                            font-family:Georgia,serif;text-shadow:0 0 10px ${glowColor};">${valDisplay}</div>
-                        <div style="font-size:62px;color:${suitColor};
-                            text-shadow:0 0 10px ${glowColor};margin-top:4px;">${symDisplay}</div>
-                    </div>
-
-                    <div style="display:flex;flex-direction:column;
-                        align-items:center;justify-content:center;z-index:10;">
-                        ${centerHTML}
-                    </div>
-                </div>
-            </div>
-
-            <div style="position:relative;z-index:10;
-                height:390px;
-                display:flex;flex-direction:column;align-items:center;justify-content:center;
-                padding:0 80px;box-sizing:border-box;gap:0;">
-
-                <div style="text-align:center;margin-bottom:20px;">
-                    <p style="margin:0 0 8px;font-size:40px;font-weight:700;
-                        color:#f5f0e8;font-family:Georgia,serif;line-height:1.2;">
-                        Encontre seu par e ganhe um shot!
-                    </p>
-                </div>
-
-                <div style="width:100%;border:2px solid #d4af37;border-radius:12px;
-                    padding:28px 50px;box-sizing:border-box;text-align:center;
-                    background:rgba(212,175,55,0.06);position:relative;overflow:hidden;
-                    flex-shrink:0;">
-                    <p style="margin:0 0 2px;font-size:22px;letter-spacing:12px;
-                        text-transform:uppercase;color:rgba(212,175,55,0.65);font-family:Georgia,serif;">
-                        Esta noite
-                    </p>
-                    <p style="margin:0;font-size:56px;font-weight:900;text-transform:uppercase;
-                        color:#f5f0e8;letter-spacing:4px;font-family:Georgia,serif;">
-                        VEM PRO TRIPLEX
-                    </p>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(shareContainer);
-
-        // 🔥 OTIMIZAÇÃO: windowWidth e windowHeight limitam a renderização virtual, acelerando o processo.
-        const canvas = await html2canvas(shareContainer, {
-            scale: 1,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#08050a',
-            windowWidth: 1080,
-            windowHeight: 1920
-        });
-        document.body.removeChild(shareContainer);
-
-        canvas.toBlob(async (blob) => {
-            const file = new File([blob], 'ultima-carta-story.jpg', {
-                type: 'image/jpeg', lastModified: Date.now()
-            });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'A Última Carta',
-                    text: 'Vem pro Triplex descobrir 👀 @atletica_sagui'
-                });
-            } else {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'ultima-carta-story.jpg';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                if (window.showToast) window.showToast("Sucesso!", "Story salvo. Posta no insta e marca a gente!", "success");
-            }
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }, 'image/jpeg', 0.85); // Compressão do JPEG ajuda a carregar mais rápido no celular do user
-
-    } catch (err) {
-        console.error("Erro ao gerar Story:", err);
-        if (window.showToast) window.showToast("Erro", "Não deu pra gerar a foto. Tire um print da tela!", "error");
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        const temp = document.getElementById('storyTemplateContainer');
-        if (temp) document.body.removeChild(temp);
-    }
+    }, 600);
 }
