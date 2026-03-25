@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "App de match feito para Atlética Sagui",
   "scripts": {
-    "dev": "npx --yes @tailwindcss/cli -i ./css/input.css -o ./css/output.css --watch",
-    "build": "node node_modules/tailwindcss/lib/cli.js -i ./css/input.css -o ./css/output.css --minify"
+    "dev": "tailwindcss -i ./css/input.css -o ./css/output.css --watch",
+    "build": "tailwindcss -i ./css/input.css -o ./css/output.css --minify"
   },
   "repository": {
     "type": "git",
