@@ -293,7 +293,7 @@ window.wipeTable = async () => {
     if (!confirm("CUIDADO: Isto vai apagar TODOS os jogadores. Continuar?")) return;
     try {
         await deleteDoc(jokerRef);
-        await deleteDoc(gameStateRef); // 🔥 Limpa o estado de fim de jogo também
+        await deleteDoc(gameStateRef);
         const snap = await getDocs(participantsCol);
         await Promise.all(snap.docs.map(d => deleteDoc(doc(participantsCol, d.id))));
         alert("Mesa limpa! Pode começar a festa.");
