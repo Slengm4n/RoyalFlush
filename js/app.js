@@ -4,7 +4,7 @@ import { auth, participantsCol, getParticipantDoc, db, matchesCol } from "./fire
 // 2. IMPORTAÇÕES DE AUTENTICAÇÃO
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// 3. IMPORTAÇÕES DO FIRESTORE (Adicionado query, where e limit para otimização extrema)
+// 3. IMPORTAÇÕES DO FIRESTORE (Com Batch e Doc para otimização extrema)
 import {
     getDoc,
     getDocs,
@@ -15,7 +15,9 @@ import {
     arrayUnion,
     query,
     where,
-    limit
+    limit,
+    writeBatch,
+    doc
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // 4. IMPORTAÇÕES LOCAIS
@@ -94,7 +96,12 @@ window.handleRegistration = async () => {
         return;
     }
 
-    if (!insta.startsWith('@')) insta = '@' + insta;
+    // HOTFIX: Tratamento inteligente do Instagram (remove espaços e links completos)
+    insta = insta.replace(/\s+/g, '').replace(/^@+/, '');
+    if (insta.includes('instagram.com/')) {
+        insta = insta.split('instagram.com/')[1].split('/')[0].split('?')[0];
+    }
+    insta = '@' + insta;
 
     // 🔥 OTIMIZAÇÃO DE UX: Desabilita o botão e mostra Loading
     const btn = document.getElementById('drawBtn');
@@ -171,20 +178,26 @@ window.checkMatch = async () => {
         const cardsMatch = (mySuit === theirSuit) || (game.myData.is_joker === true) || (otherData.is_joker === true);
 
         if (cardsMatch) {
-            await addDoc(matchesCol, {
+            // HOTFIX: Uso de transação Batch para garantir consistência de dados
+            const batch = writeBatch(db);
+            const newMatchRef = doc(matchesCol);
+            
+            batch.set(newMatchRef, {
                 p1_name: game.myData.name,
                 p2_name: otherData.name,
                 prizeId: prizeId,
                 timestamp: new Date().toISOString()
             });
 
-            await updateDoc(getParticipantDoc(game.myData.uid), {
+            batch.update(getParticipantDoc(game.myData.uid), {
                 usedMatches: arrayUnion(prizeId)
             });
 
-            await updateDoc(getParticipantDoc(otherData.uid), {
+            batch.update(getParticipantDoc(otherData.uid), {
                 usedMatches: arrayUnion(prizeId)
             });
+
+            await batch.commit();
 
             if (!game.myData.usedMatches) game.myData.usedMatches = [];
             game.myData.usedMatches.push(prizeId);
