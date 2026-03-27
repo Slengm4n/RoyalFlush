@@ -7,12 +7,10 @@
     <title>A Última Carta</title>
     <meta name="description" content="A Última Carta - Encontre seu par na festa do Triplex e ganhe um shot duplo!">
 
-    <!-- Preconnects -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
-    <!-- Font Awesome — async, não bloqueia renderização -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
         media="print" onload="this.media='all'">
     <noscript>
@@ -27,10 +25,8 @@
         <link rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=UnifrakturMaguntia&display=swap">
     </noscript>
-    <!-- CSS principal -->
     <link rel="stylesheet" href="css/output.css">
 
-    <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
@@ -38,14 +34,12 @@
 </head>
 
 <body class="p-4 pt-8 pb-12 relative">
-    <!-- BOTÃO DE AJUDA / TUTORIAL -->
     <button onclick="openHelp()"
         class="absolute top-6 right-6 text-gold/60 hover:text-gold active:scale-90 transition p-2 z-[80]"
         title="Como Jogar?">
         <i class="fas fa-question-circle text-3xl drop-shadow-md"></i>
     </button>
 
-    <!-- NAVEGAÇÃO FLUTUANTE -->
     <div
         class="fixed bottom-4 right-4 z-[90] flex flex-col gap-3 opacity-20 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
         <a href="app/admin.html"
@@ -73,7 +67,6 @@
         Conectando à mesa...
     </div>
 
-    <!-- SEÇÃO 1: REGISTRO -->
     <main>
         <section id="registrationSection" class="w-full max-w-md glass-panel p-6 md:p-8 rounded-3xl shadow-2xl mx-auto">
             <h2 class="text-2xl font-bold mb-6 text-center italic text-gold">Inicie sua Jogada</h2>
@@ -87,7 +80,6 @@
                         placeholder="Ex: Fulano da Silva">
                 </div>
 
-                <!-- CAMPO: INSTAGRAM -->
                 <div class="space-y-1">
                     <label class="block text-[10px] text-gray-400 uppercase font-bold tracking-widest ml-1">O seu
                         Instagram</label>
@@ -130,8 +122,7 @@
                             <div class="option-item" onclick="selectOption('interest', 'm', 'Homens')">Homens</div>
                             <div class="option-item" onclick="selectOption('interest', 'all', 'Ambos')">Ambos</div>
                             <div class="option-item" onclick="selectOption('interest', 'party', 'Festa (Só Curtição)')">
-                                Só
-                                Curtição</div>
+                                Só Curtição</div>
                         </div>
                     </div>
                     <input type="hidden" id="userInterest" value="">
@@ -142,12 +133,10 @@
                     SORTEAR MINHA CARTA
                 </button>
                 <p id="authLoadingMsg" class="text-center text-[10px] text-gold animate-pulse italic mt-2 pb-2">
-                    Aguardando
-                    cassino...</p>
+                    Aguardando cassino...</p>
             </div>
         </section>
 
-        <!-- SEÇÃO 2: SORTEIO -->
         <section id="shuffleSection" class="hidden-section text-center">
             <div class="card-container mx-auto shuffling">
                 <div class="card-face card-back">
@@ -159,7 +148,6 @@
             <p class="mt-8 text-xl font-bold tracking-widest text-gold animate-bounce uppercase">A embaralhar...</p>
         </section>
 
-        <!-- SEÇÃO 3: CARTA REVELADA -->
         <section id="revealSection" class="hidden-section w-full max-w-sm text-center mx-auto">
 
             <div class="card-container mb-6 mx-auto mt-2">
@@ -238,12 +226,10 @@
                 </button>
             </div>
 
-            <button onclick="localStorage.removeItem('festa_uid_final_scale'); location.reload();"
-                class="mt-10 text-[10px] uppercase font-bold tracking-widest text-gray-600 active:text-gray-400">Reiniciar
-                Teste</button>
+            <button onclick="restartGame()"
+                class="mt-10 mx-auto block text-[10px] uppercase font-bold tracking-widest text-gray-500 hover:text-gray-300 transition">Reiniciar Teste</button>
         </section>
     </main>
-    <!-- MODAL DE MATCH -->
     <div id="matchModal"
         class="hidden fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center p-6 md:p-8 text-center overflow-y-auto">
         <div id="celebrationHeader">
@@ -267,7 +253,6 @@
             class="bg-white text-black px-12 py-4 rounded-full font-black text-lg mx-auto block active:scale-95 transition-transform shadow-lg">VOLTAR</button>
     </div>
 
-    <!-- MODAL DE AJUDA (COMO JOGAR) -->
     <div id="helpModal"
         class="hidden fixed inset-0 bg-black/90 z-[300] flex flex-col items-center justify-center p-6 text-center">
         <div

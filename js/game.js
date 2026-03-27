@@ -1,5 +1,5 @@
 import { db, participantsCol, jokerRef, getParticipantDoc } from "./firebase.js";
-import { setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { setDoc, runTransaction, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 export let myData = null;
 
@@ -22,17 +22,33 @@ export async function processDraw(currentUser, name, insta, gender, interest) {
 
     const randomSuit = suits[Math.floor(Math.random() * suits.length)];
     const randomValue = values[Math.floor(Math.random() * values.length)];
-    const matchCode = (uid.substring(0, 2) + Math.random().toString(36).substring(2, 4)).toUpperCase();
+    
+    const safeChars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let matchCode = '';
+    for (let i = 0; i < 4; i++) {
+        matchCode += safeChars.charAt(Math.floor(Math.random() * safeChars.length));
+    }
 
     let isJoker = false;
 
     // 🔥 OTIMIZAÇÃO: Transação mais limpa e direta. Ocorrerá menos "retry" no Firebase.
     try {
+        // 1. Conta quantas pessoas já estão registadas na festa
+        const countSnap = await getCountFromServer(participantsCol);
+        const totalPlayers = countSnap.data().count;
+
+        // 2. Ajusta a probabilidade de forma dinâmica.
+        let jokerProbability = 0.05; // Até 14 pessoas: 5% de hipótese
+        if (totalPlayers >= 15) jokerProbability = 0.20; // 15 a 24 pessoas: 20% de hipótese
+        if (totalPlayers >= 25) jokerProbability = 0.50; // 25 a 34 pessoas: 50% de hipótese
+        if (totalPlayers >= 35) jokerProbability = 1.00; // 35+ pessoas: 100% (Sai obrigatoriamente!)
+
+        // 3. Tenta atribuir o Coringa
         await runTransaction(db, async (transaction) => {
             const jokerSnap = await transaction.get(jokerRef);
             // Só tenta ser coringa se ele NÃO existir ou se o 'taken' for falso
             if (!jokerSnap.exists() || jokerSnap.data()?.taken !== true) {
-                if (Math.random() < 0.05) {
+                if (Math.random() < jokerProbability) {
                     isJoker = true;
                     transaction.set(jokerRef, { taken: true, winner: uid, name: name });
                 }
@@ -141,12 +157,6 @@ export function processMatchResult(other) {
     const matchMsg = el('matchMsg');
     const voucherDiv = el('prizeVoucher');
 
-    // O Cooldown original foi movido inteiramente para o app.js na nova versão.
-    // Manteremos apenas a lógica visual aqui.
-
-    // A validação de "cardsMatch" já ocorreu no app.js antes de chamar essa função!
-    // Se chegou aqui, é sucesso absoluto.
-
     const instaDisplay = other.instagram ? `<br><a href="https://instagram.com/${other.instagram.replace('@', '')}" target="_blank" class="text-pink-400 text-sm mt-3 inline-block bg-white/10 px-4 py-2 rounded-full border border-pink-500/30 active:scale-95 transition"><i class="fab fa-instagram"></i> ${other.instagram}</a>` : '';
 
     if (matchMsg) matchMsg.innerHTML = `O DESTINO FALOU! ✨<br>Tu e ${other.name} combinam perfeitamente. ${instaDisplay}`;
@@ -179,8 +189,6 @@ export function shareToInstagram() {
                 "success"
             );
         }
-
-        // Sai do fullscreen após 3s e volta ao normal
         setTimeout(() => {
             if (document.exitFullscreen) document.exitFullscreen();
         }, 10000);

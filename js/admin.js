@@ -1,14 +1,14 @@
 import { auth, db, participantsCol, jokerRef, getParticipantDoc, getVoucherDoc, appId } from "./firebase.js";
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { 
+import {
     getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, doc,
-    query, where, limit 
+    query, where, limit
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'game_state');
 let currentUser = null;
 
-// 🔥 CACHE DE DOM (Evita o JavaScript ficar procurando coisas no HTML repetidas vezes)
+//CACHE DE DOM (Evita o JavaScript ficar procurando coisas no HTML repetidas vezes)
 const domCache = {};
 const el = (id) => {
     if (!domCache[id]) domCache[id] = document.getElementById(id);
@@ -57,8 +57,8 @@ window.validateVoucher = async (e) => {
         } else {
             statusDiv.innerHTML = `<p class="text-yellow-500 font-bold uppercase">Código Inválido</p>`;
         }
-    } catch (err) { 
-        console.error(err); 
+    } catch (err) {
+        console.error(err);
         alert("Erro ao validar voucher. Verifique a conexão.");
     }
     input.value = '';
@@ -68,34 +68,56 @@ window.validateVoucher = async (e) => {
 window.randomizeJoker = async () => {
     if (!confirm("Transferir o Coringa para alguém aleatório?")) return;
     try {
-        // 🔥 OTIMIZAÇÃO: Buscamos apenas quem não é coringa para sortear
+        // Buscamos apenas quem não é coringa para sortear o próximo
         const candidatesQ = query(participantsCol, where("is_joker", "==", false));
         const candidatesSnap = await getDocs(candidatesQ);
-        
+
         if (candidatesSnap.empty) return alert("Sem candidatos disponíveis na mesa!");
 
-        // 🔥 OTIMIZAÇÃO: Buscamos o coringa atual direto ao ponto
+        // Buscamos o coringa atual
         const currentJokerQ = query(participantsCol, where("is_joker", "==", true), limit(1));
         const currentJokerSnap = await getDocs(currentJokerQ);
 
+        // Se existe um coringa atual, damos-lhe uma carta aleatória nova
         if (!currentJokerSnap.empty) {
-            const currentJokerId = currentJokerSnap.docs[0].id;
+            const currentJokerDoc = currentJokerSnap.docs[0];
+            const currentJokerId = currentJokerDoc.id;
+            const playerData = currentJokerDoc.data();
+
+            const suits = [
+                { name: 'Copas', symbol: '♥️', color: '#b91c1c' },
+                { name: 'Espadas', symbol: '♠', color: '#1a1a1a' },
+                { name: 'Ouros', symbol: '♦', color: '#b91c1c' },
+                { name: 'Trevos', symbol: '♣', color: '#1a1a1a' }
+            ];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+            const randomValue = values[Math.floor(Math.random() * values.length)];
+
+            let targetText = "alguém";
+            if (playerData.interest === 'f') targetText = "uma mulher";
+            else if (playerData.interest === 'm') targetText = "um homem";
+
             await updateDoc(getParticipantDoc(currentJokerId), {
-                is_joker: false, 
-                suitName: 'Trevos', suitSymbol: '♣', cardValue: '2', color: '#1a1a1a',
-                suggestion: 'Encontre alguém com o naipe de Trevos!'
+                is_joker: false,
+                suitName: randomSuit.name,
+                suitSymbol: randomSuit.symbol,
+                cardValue: randomValue,
+                color: randomSuit.color,
+                suggestion: `Encontra ${targetText} com o naipe de ${randomSuit.name}!`
             });
         }
 
         const newJokerDoc = candidatesSnap.docs[Math.floor(Math.random() * candidatesSnap.docs.length)];
         const data = newJokerDoc.data();
-        
+
         await updateDoc(getParticipantDoc(newJokerDoc.id), {
-            is_joker: true, 
+            is_joker: true,
             suitName: 'Coringa', suitSymbol: '🎭', cardValue: 'J', color: '#a855f7',
             suggestion: 'Você é o Caos! Encontre quem você quiser.'
         });
-        
+
         await setDoc(jokerRef, { taken: true, winner: data.uid, name: data.name });
         alert(`Novo Coringa sorteado: ${data.name.toUpperCase()}`);
     } catch (e) { console.error(e); }
@@ -104,29 +126,52 @@ window.randomizeJoker = async () => {
 window.resetJoker = async () => {
     if (!confirm("Devolver Coringa ao baralho e remover do jogador atual?")) return;
     try {
-        // 🔥 OTIMIZAÇÃO: Vai direto no documento do Coringa em vez de baixar todos
         const currentJokerQ = query(participantsCol, where("is_joker", "==", true), limit(1));
         const currentJokerSnap = await getDocs(currentJokerQ);
-        
+
         if (!currentJokerSnap.empty) {
-            const currentJokerId = currentJokerSnap.docs[0].id;
-            await updateDoc(getParticipantDoc(currentJokerId), { 
+            const currentJokerDoc = currentJokerSnap.docs[0];
+            const currentJokerId = currentJokerDoc.id;
+            const playerData = currentJokerDoc.data();
+
+            // 1. Arrays do Baralho
+            const suits = [
+                { name: 'Copas', symbol: '♥️', color: '#b91c1c' },
+                { name: 'Espadas', symbol: '♠', color: '#1a1a1a' },
+                { name: 'Ouros', symbol: '♦', color: '#b91c1c' },
+                { name: 'Trevos', symbol: '♣', color: '#1a1a1a' }
+            ];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+            // 2. Sorteio Aleatório
+            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+            const randomValue = values[Math.floor(Math.random() * values.length)];
+
+            // 3. Montar a frase de sugestão baseada no interesse do utilizador
+            let targetText = "alguém";
+            if (playerData.interest === 'f') targetText = "uma mulher";
+            else if (playerData.interest === 'm') targetText = "um homem";
+
+            // 4. Atualizar o utilizador no Firebase com a nova carta
+            await updateDoc(getParticipantDoc(currentJokerId), {
                 is_joker: false,
-                suitName: 'Trevos', suitSymbol: '♣', cardValue: '2', color: '#1a1a1a',
-                suggestion: 'Encontre ALGUÉM com o naipe de Trevos!'
+                suitName: randomSuit.name,
+                suitSymbol: randomSuit.symbol,
+                cardValue: randomValue,
+                color: randomSuit.color,
+                suggestion: `Encontra ${targetText} com o naipe de ${randomSuit.name}!`
             });
         }
         await deleteDoc(jokerRef);
         alert("Coringa resetado e devolvido ao baralho!");
     } catch (e) { console.error(e); }
 };
-
 window.triggerEndGame = async () => {
     if (!confirm("🚨 Isso vai encerrar o jogo e exibir as estatísticas no telão. Tem certeza?")) return;
     try {
-        await setDoc(gameStateRef, { 
-            isGameOver: true, 
-            endedAt: new Date().toISOString() 
+        await setDoc(gameStateRef, {
+            isGameOver: true,
+            endedAt: new Date().toISOString()
         });
         alert("🏁 Festa encerrada! Verifique o telão.");
     } catch (error) {
@@ -143,19 +188,17 @@ function initFirebase() {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        
-        // --- OUVINTE DA GRID OTIMIZADO ---
+
         onSnapshot(participantsCol, (snapshot) => {
             const totalEl = el('totalPlayers');
             if (totalEl) totalEl.innerText = snapshot.size;
-            
+
             const grid = el('cardsGrid');
             if (!grid) return;
 
             let jokerFound = false;
             const jokerNameEl = el('jokerName');
 
-            // 🔥 MÁGICA DE PERFORMANCE: Só atualiza o que mudou (docChanges)
             snapshot.docChanges().forEach(change => {
                 const docId = change.doc.id;
                 const d = change.doc.data();
@@ -165,37 +208,37 @@ onAuthStateChanged(auth, (user) => {
                 }
                 if (change.type === "modified") {
                     const existingCard = el(`admin-card-${docId}`);
-                    if (existingCard) existingCard.outerHTML = getMiniCardHTML(docId, d);
+                    if (existingCard && existingCard.parentNode) {
+                        existingCard.outerHTML = getMiniCardHTML(docId, d);
+                    } else {
+                        console.log(`Card ${docId} está órfão ou sendo renderizado, pulando atualização de outerHTML.`);
+                    }
                 }
                 if (change.type === "removed") {
                     const existingCard = el(`admin-card-${docId}`);
                     if (existingCard) existingCard.remove();
                 }
 
-                // Verifica o Coringa
                 if (d.is_joker) {
                     jokerFound = true;
                     if (jokerNameEl) jokerNameEl.innerText = d.name;
                 }
             });
 
-            // Se o coringa foi resetado/removido
             if (!jokerFound && jokerNameEl && snapshot.size > 0) {
-                // Passa rapidamente pelos atuais só para garantir
                 const hasJokerNow = snapshot.docs.some(doc => doc.data().is_joker);
-                if(!hasJokerNow) jokerNameEl.innerText = "Ninguém tirou ainda";
+                if (!hasJokerNow) jokerNameEl.innerText = "Ninguém tirou ainda";
             }
         });
     }
 });
 
-// 🔥 OTIMIZAÇÃO: Função separada apenas para gerar o HTML da cartinha (com ID único para o DOM achar rápido)
 function getMiniCardHTML(docId, d) {
     const isJ = d.is_joker;
     const instaRaw = d.instagram || '';
     const instaClean = instaRaw.replace('@', '');
-    const instaHTML = instaClean 
-        ? `<a href="https://instagram.com/${instaClean}" target="_blank" class="text-[10px] text-pink-400 hover:text-pink-300 mt-1 truncate w-full text-center" title="Ver Instagram"><i class="fab fa-instagram"></i> @${instaClean}</a>` 
+    const instaHTML = instaClean
+        ? `<a href="https://instagram.com/${instaClean}" target="_blank" class="text-[10px] text-pink-400 hover:text-pink-300 mt-1 truncate w-full text-center" title="Ver Instagram"><i class="fab fa-instagram"></i> @${instaClean}</a>`
         : `<span class="text-[9px] text-gray-600 mt-1">Sem Insta</span>`;
 
     return `
