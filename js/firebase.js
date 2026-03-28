@@ -11,14 +11,17 @@ import {
     enableIndexedDbPersistence
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+// 2. CONFIGURAÇÃO DO PROJETO (REVERTIDA PARA FUNCIONAR AGORA)
 const firebaseConfig = {
-    apiKey: "__FIREBASE_API_KEY__",
-    authDomain: "__FIREBASE_AUTH_DOMAIN__",
-    projectId: "__FIREBASE_PROJECT_ID__",
-    storageBucket: "__FIREBASE_STORAGE_BUCKET__",
-    messagingSenderId: "__FIREBASE_MESSAGING_SENDER_ID__",
-    appId: "__FIREBASE_APP_ID__"
+    apiKey: "AIzaSyC8Do2gBZFllqUvVScL24lh99g_T-3qX94",
+    authDomain: "royalflush-a2542.firebaseapp.com",
+    projectId: "royalflush-a2542",
+    storageBucket: "royalflush-a2542.firebasestorage.app",
+    messagingSenderId: "928142170599",
+    appId: "1:928142170599:web:d5568ae550a892dc544542"
 };
+
+// ... o resto do arquivo (initializeApp, auth, db) continua igual
 
 
 const app = initializeApp(firebaseConfig);

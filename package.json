@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "App de match feito para Atlética Sagui",
   "scripts": {
-    "dev": "tailwindcss -i ./css/input.css -o ./css/output.css --watch",
-   "build": "sed -i \"s/__FIREBASE_API_KEY__/$FIREBASE_API_KEY/g; s/__FIREBASE_AUTH_DOMAIN__/$FIREBASE_AUTH_DOMAIN/g; s/__FIREBASE_PROJECT_ID__/$FIREBASE_PROJECT_ID/g; s/__FIREBASE_STORAGE_BUCKET__/$FIREBASE_STORAGE_BUCKET/g; s/__FIREBASE_MESSAGING_SENDER_ID__/$FIREBASE_MESSAGING_SENDER_ID/g; s/__FIREBASE_APP_ID__/$FIREBASE_APP_ID/g\" ./js/firebase.js && tailwindcss -i ./css/input.css -o ./css/output.css --minify"
-  },
+  "dev": "tailwindcss -i ./css/input.css -o ./css/output.css --watch",
+  "build": "tailwindcss -i ./css/input.css -o ./css/output.css --minify"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Slengm4n/RoyalFlush.git"
